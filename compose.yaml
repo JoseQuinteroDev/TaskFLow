@@ -1,10 +1,42 @@
 services:
-  mysql:
-    image: 'mysql:latest'
+  db:
+    image: mysql:8.4
+    container_name: taskflow-db
+    restart: unless-stopped
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      MYSQL_DATABASE: taskflow_db
+      MYSQL_USER: taskflow_user
+      MYSQL_PASSWORD: taskflow_pass
+      MYSQL_ROOT_PASSWORD: rootpass
     ports:
-      - '3306'
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  app:
+    build: .
+    container_name: taskflow-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: taskflow_db
+      DB_USER: taskflow_user
+      DB_PASSWORD: taskflow_pass
+      JWT_SECRET: CAMBIA_ESTO_POR_UN_SECRET_BASE64_MUY_LARGO
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:
