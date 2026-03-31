@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+// UsuarioRepository.java
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    //implementación de funciones por derivación del nombre del método
     Optional<Usuario> findByEmail(String email);
-    boolean existsAllEmail(String email);
+    boolean existsByEmail(String email);
 }

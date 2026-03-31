@@ -21,11 +21,15 @@ public class JwtService {
     private long jwtExpirationMs;
 
     public String generateToken(UserDetails userDetails) {
+        return generateTokenByUsername(userDetails.getUsername());
+    }
+
+    public String generateTokenByUsername(String username) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(username)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())

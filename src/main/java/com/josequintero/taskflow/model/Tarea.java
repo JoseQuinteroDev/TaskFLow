@@ -56,27 +56,23 @@ public class Tarea {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Tarea.java
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
     @PrePersist
-    public void prePersist()
-    {
-        if (estado == null)
-        {
+    public void prePersist() {
+        if (estado == null) {
             estado = EstadoTarea.PENDIENTE;
         }
-        if (prioridad == null)
-        {
-            prioridad = prioridad.MEDIA;
+        if (prioridad == null) {
+            prioridad = PrioridadTarea.MEDIA;
         }
-        if (fechaCreacion == null)
-        {
+        if (fechaCreacion == null) {
             fechaCreacion = LocalDateTime.now();
         }
-        if (fechaActualizacion == null)
-        {
+        if (fechaActualizacion == null) {
             fechaActualizacion = LocalDateTime.now();
         }
     }
