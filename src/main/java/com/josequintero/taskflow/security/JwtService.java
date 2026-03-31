@@ -21,10 +21,10 @@ public class JwtService {
     private long jwtExpirationMs;
 
     public String generateToken(UserDetails userDetails) {
-        return generateTokenByUsername(userDetails.getUsername());
+        return generateTokenByEmail(userDetails.getUsername());
     }
 
-    public String generateTokenByUsername(String username) {
+    public String generateTokenByEmail(String username) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + jwtExpirationMs);
 

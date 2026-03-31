@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
         usuarioRepository.save(usuario);
 
-        String token = jwtService.generateTokenByUsername(usuario.getNombre());
+        String token = jwtService.generateTokenByEmail(usuario.getEmail());
 
         return AuthResponseDto.builder()
                 .token(token)
