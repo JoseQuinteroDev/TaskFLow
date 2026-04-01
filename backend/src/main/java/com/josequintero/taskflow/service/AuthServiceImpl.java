@@ -1,4 +1,4 @@
-package com.josequintero.taskflow.service.impl;
+package com.josequintero.taskflow.service;
 
 import com.josequintero.taskflow.dto.auth.AuthResponseDto;
 import com.josequintero.taskflow.dto.auth.LoginRequestDto;

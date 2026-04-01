@@ -24,12 +24,12 @@ public class JwtService {
         return generateTokenByEmail(userDetails.getUsername());
     }
 
-    public String generateTokenByEmail(String username) {
+    public String generateTokenByEmail(String email) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(email)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())
