@@ -1,0 +1,143 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--clr-bg);
+}
+
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--clr-bg-1);
+  border-right: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0 auto 0 0;
+  transition: width var(--t-base);
+  overflow: hidden;
+
+  &.collapsed {
+    width: 72px;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.sidebar__logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--clr-accent);
+  color: #04271d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.logo-text {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 8px;
+  flex: 1;
+}
+
+.nav-item {
+  min-height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  color: var(--clr-text-muted);
+
+  &:hover {
+    background: var(--clr-bg-2);
+    color: var(--clr-text);
+  }
+
+  &.active {
+    background: var(--clr-accent-dim);
+    color: var(--clr-accent);
+  }
+}
+
+.nav-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar__bottom {
+  padding: 12px 8px;
+  border-top: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-info {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+
+  &.collapsed {
+    justify-content: center;
+  }
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--clr-accent-dim);
+  color: var(--clr-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: var(--clr-text-muted);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  transition: margin-left var(--t-base);
+  min-width: 0;
+
+  &.sidebar-collapsed {
+    margin-left: 72px;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+}

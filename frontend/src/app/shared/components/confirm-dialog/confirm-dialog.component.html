@@ -1,0 +1,16 @@
+<div class="overlay" (click)="cancelled.emit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+            <h3>{{ title }}</h3>
+        </div>
+
+        <div class="modal__body">
+            <p>{{ message }}</p>
+        </div>
+
+        <div class="modal__footer">
+            <button class="btn btn-secondary" (click)="cancelled.emit()">Cancelar</button>
+            <button class="btn btn-danger" (click)="confirmed.emit()">{{ confirmLabel }}</button>
+        </div>
+    </div>
+</div>

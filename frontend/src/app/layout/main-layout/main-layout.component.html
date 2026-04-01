@@ -1,0 +1,48 @@
+<div class="shell">
+    <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+        <div class="sidebar__logo">
+            <div class="logo-mark">TF</div>
+            @if (!sidebarCollapsed()) {
+                <span class="logo-text">TaskFlow</span>
+            }
+        </div>
+
+        <nav class="sidebar__nav">
+            @for (item of navItems; track item.path) {
+                <a
+                        [routerLink]="item.path"
+                        routerLinkActive="active"
+                        class="nav-item"
+                        [title]="sidebarCollapsed() ? item.label : ''"
+                >
+                    <span class="nav-item__icon" [innerHTML]="item.icon"></span>
+                    @if (!sidebarCollapsed()) {
+                        <span class="nav-item__label">{{ item.label }}</span>
+                    }
+                </a>
+            }
+        </nav>
+
+        <div class="sidebar__bottom">
+            <div class="user-info" [class.collapsed]="sidebarCollapsed()">
+                <div class="user-avatar">{{ userInitial() }}</div>
+
+                @if (!sidebarCollapsed()) {
+                    <div class="user-details">
+                        <span class="user-email">{{ userEmail() }}</span>
+                        @if (isAdmin()) {
+                            <span class="badge badge-success">Admin</span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <button class="btn btn-ghost" (click)="logout()">Cerrar sesión</button>
+            <button class="btn btn-secondary btn-sm" (click)="toggleSidebar()">Toggle</button>
+        </div>
+    </aside>
+
+    <main class="main-content" [class.sidebar-collapsed]="sidebarCollapsed()">
+        <router-outlet />
+    </main>
+</div>

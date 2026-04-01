@@ -1,0 +1,153 @@
+<div class="page-wrapper" style="max-width:720px">
+    <div class="form-page-header">
+        <a routerLink="/tareas" class="back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Volver
+        </a>
+
+        <div>
+            <h1 class="page-header__title">{{ isEditing() ? 'Editar tarea' : 'Nueva tarea' }}</h1>
+            <p class="page-header__subtitle">
+                {{ isEditing() ? 'Modifica los datos de la tarea' : 'Completa los datos de tu nueva tarea' }}
+            </p>
+        </div>
+    </div>
+
+    @if (loadingData()) {
+        <app-loading [fullPage]="true" message="Cargando tarea..." />
+    } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="task-form" novalidate>
+            <div class="form-card">
+                <h3 class="form-section-title">Información básica</h3>
+
+                <div class="form-group">
+                    <label class="form-label" for="titulo">
+                        Título <span style="color:var(--clr-red)">*</span>
+                    </label>
+
+                    <input
+                            id="titulo"
+                            type="text"
+                            class="form-control"
+                            formControlName="titulo"
+                            placeholder="¿Qué necesitas hacer?"
+                            maxlength="100"
+                    />
+
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        @if (f('titulo').invalid && f('titulo').touched) {
+                            <span class="form-error">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                El título debe tener entre 3 y 100 caracteres
+              </span>
+                        } @else {
+                            <span></span>
+                        }
+
+                        <span class="char-count" [class.near-limit]="(f('titulo').value?.length ?? 0) > 80">
+              {{ f('titulo').value?.length ?? 0 }}/100
+            </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="descripcion">Descripción</label>
+                    <textarea
+                            id="descripcion"
+                            class="form-control form-control-textarea"
+                            formControlName="descripcion"
+                            placeholder="Añade más detalles sobre esta tarea (opcional)"
+                            maxlength="500"
+                            rows="4"
+                    ></textarea>
+
+                    <div style="display:flex;justify-content:flex-end">
+                        <span class="char-count">{{ f('descripcion').value?.length ?? 0 }}/500</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h3 class="form-section-title">Configuración</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="prioridad">Prioridad</label>
+
+                        <div class="priority-selector">
+                            @for (p of prioridades; track p.value) {
+                                <label
+                                        class="priority-option priority-option--{{ p.value.toLowerCase() }}"
+                                        [class.selected]="f('prioridad').value === p.value"
+                                >
+                                    <input type="radio" formControlName="prioridad" [value]="p.value" class="sr-only" />
+                                    <span>{{ p.label }}</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    @if (isEditing()) {
+                        <div class="form-group">
+                            <label class="form-label" for="estado">Estado</label>
+                            <select id="estado" class="form-control form-control-select" formControlName="estado">
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="EN_PROCESO">En proceso</option>
+                                <option value="COMPLETADA">Completada</option>
+                            </select>
+                        </div>
+                    }
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="fechaLimite">Fecha límite</label>
+                        <input
+                                id="fechaLimite"
+                                type="date"
+                                class="form-control"
+                                formControlName="fechaLimite"
+                                [min]="today"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="categoriaId">Categoría</label>
+                        <select id="categoriaId" class="form-control form-control-select" formControlName="categoriaId">
+                            <option [ngValue]="null">Sin categoría</option>
+                            @for (cat of categorias(); track cat.id) {
+                                <option [value]="cat.id">{{ cat.nombre }}</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a routerLink="/tareas" class="btn btn-secondary">Cancelar</a>
+
+                <button
+                        type="submit"
+                        class="btn btn-primary"
+                        [disabled]="loading() || form.invalid"
+                >
+                    @if (loading()) {
+                        <span class="btn-spinner"></span>
+                        {{ isEditing() ? 'Guardando...' : 'Creando...' }}
+                    } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {{ isEditing() ? 'Guardar cambios' : 'Crear tarea' }}
+                    }
+                </button>
+            </div>
+        </form>
+    }
+</div>

@@ -1,0 +1,20 @@
+.loading-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  gap: 16px;
+}
+
+.spinner {
+  border: 2px solid var(--clr-border);
+  border-top-color: var(--clr-accent);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+.loading-msg {
+  color: var(--clr-text-muted);
+  font-size: 0.875rem;
+}

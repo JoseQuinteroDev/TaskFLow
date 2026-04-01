@@ -1,0 +1,88 @@
+<div class="tarea-card" [class.tarea-card--done]="tarea.completada" [class.tarea-card--vencida]="tarea.vencida && !tarea.completada">
+    <div class="priority-stripe priority-stripe--{{ tarea.prioridad.toLowerCase() }}"></div>
+
+    <div class="tarea-card__body">
+        <div class="tarea-card__top">
+            <div class="badges-row">
+        <span class="badge {{ estadoBadge(tarea.estado) }}">
+          <span class="dot"></span>{{ estadoLabel(tarea.estado) }}
+        </span>
+
+                <span class="badge {{ prioridadBadge() }}">
+          {{ prioridadLabel() }}
+        </span>
+
+                @if (tarea.vencida && !tarea.completada) {
+                    <span class="badge badge-danger">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Vencida
+          </span>
+                }
+            </div>
+
+            <div class="tarea-card__actions">
+                @if (!tarea.completada) {
+                    <button class="btn-icon" title="Marcar completada" (click)="completar.emit(tarea.id)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                }
+
+                <a class="btn-icon" [routerLink]="['/tareas/editar', tarea.id]" title="Editar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </a>
+
+                <button class="btn-icon btn-icon--danger" title="Eliminar" (click)="onEliminar()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <h3 class="tarea-card__title" [class.done-text]="tarea.completada">{{ tarea.titulo }}</h3>
+
+        @if (tarea.descripcion) {
+            <p class="tarea-card__desc">{{ tarea.descripcion }}</p>
+        }
+
+        <div class="tarea-card__footer">
+            @if (tarea.categoria) {
+                <span class="categoria-chip">{{ tarea.categoria.nombre }}</span>
+            }
+
+            @if (tarea.fechaLimite) {
+                <span class="fecha-chip" [class.fecha-chip--danger]="tarea.vencida && !tarea.completada">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+                    {{ formatDate(tarea.fechaLimite) }}
+        </span>
+            }
+        </div>
+    </div>
+
+    @if (confirmDelete()) {
+        <div class="delete-confirm">
+            <span>¿Eliminar esta tarea?</span>
+            <div style="display:flex;gap:6px">
+                <button class="btn btn-danger btn-sm" (click)="eliminar.emit(tarea.id)">Sí, eliminar</button>
+                <button class="btn btn-secondary btn-sm" (click)="confirmDelete.set(false)">Cancelar</button>
+            </div>
+        </div>
+    }
+</div>

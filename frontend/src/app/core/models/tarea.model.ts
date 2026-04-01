@@ -1,0 +1,62 @@
+import { CategoriaResponse } from './categoria.model';
+
+export type EstadoTarea = 'PENDIENTE' | 'EN_PROCESO' | 'COMPLETADA';
+export type PrioridadTarea = 'BAJA' | 'MEDIA' | 'ALTA';
+
+export interface TareaCreateRequest {
+    titulo: string;
+    descripcion?: string;
+    prioridad: PrioridadTarea;
+    fechaLimite?: string;
+    categoriaId?: number;
+}
+
+export interface TareaUpdateRequest {
+    titulo: string;
+    descripcion?: string;
+    prioridad: PrioridadTarea;
+    estado: EstadoTarea;
+    fechaLimite?: string;
+    categoriaId?: number;
+}
+
+export interface TareaResponse {
+    id: number;
+    titulo: string;
+    descripcion?: string;
+    prioridad: PrioridadTarea;
+    estado: EstadoTarea;
+    fechaLimite?: string;
+    vencida: boolean;
+    completada: boolean;
+    fechaCreacion: string;
+    categoria?: CategoriaResponse;
+}
+
+export interface TareaResumen {
+    total: number;
+    pendientes: number;
+    completadas: number;
+    vencidas: number;
+}
+
+export interface TareaFiltros {
+    texto?: string;
+    estado?: EstadoTarea;
+    prioridad?: PrioridadTarea;
+    desde?: string;
+    hasta?: string;
+    categoriaId?: number;
+}
+
+export const ESTADO_LABELS: Record<EstadoTarea, string> = {
+    PENDIENTE: 'Pendiente',
+    EN_PROCESO: 'En proceso',
+    COMPLETADA: 'Completada'
+};
+
+export const PRIORIDAD_LABELS: Record<PrioridadTarea, string> = {
+    BAJA: 'Baja',
+    MEDIA: 'Media',
+    ALTA: 'Alta'
+};
