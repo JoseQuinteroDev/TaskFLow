@@ -1,6 +1,8 @@
 <div class="toast-container">
     @for (toast of toastService.toasts(); track toast.id) {
-        <div class="toast" [class.leaving]="toast.leaving" [class]="'toast toast--' + toast.type">
+        <div class="toast toast--{{ toast.type }}" [class.leaving]="toast.leaving">
+            <div class="toast__indicator"></div>
+
             <div class="toast__body">
                 <strong>{{ toast.title }}</strong>
                 @if (toast.message) {
@@ -8,7 +10,12 @@
                 }
             </div>
 
-            <button class="toast__close" (click)="toastService.dismiss(toast.id)">×</button>
+            <button class="toast__close" type="button" (click)="toastService.dismiss(toast.id)" aria-label="Cerrar notificación">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
         </div>
     }
 </div>

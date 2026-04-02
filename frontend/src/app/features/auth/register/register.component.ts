@@ -1,20 +1,21 @@
-import { Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 function passwordStrength(control: AbstractControl): { [key: string]: boolean } | null {
-  const val: string = control.value ?? '';
-  if (!val) return null;
+  const value: string = control.value ?? '';
+  if (!value) {
+    return null;
+  }
 
-  const hasUpper = /[A-Z]/.test(val);
-  const hasNum = /[0-9]/.test(val);
+  const hasUpper = /[A-Z]/.test(value);
+  const hasNumber = /[0-9]/.test(value);
 
-  if (!hasUpper || !hasNum) return { weak: true };
-  return null;
+  return hasUpper && hasNumber ? null : { weak: true };
 }
 
 @Component({
@@ -22,7 +23,7 @@ function passwordStrength(control: AbstractControl): { [key: string]: boolean } 
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrl: './register.component.scss'
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
@@ -33,7 +34,7 @@ export class RegisterComponent {
   form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8), passwordStrength]],
+    password: ['', [Validators.required, Validators.minLength(8), passwordStrength]]
   });
 
   loading = signal(false);
@@ -42,9 +43,9 @@ export class RegisterComponent {
   strengthPct = 0;
 
   features = [
-    'Cuenta gratuita y sin límites',
-    'Tus datos siempre privados',
-    'Acceso desde cualquier dispositivo',
+    'Crea un espacio de trabajo serio y limpio desde el primer minuto.',
+    'Centraliza tareas, prioridades y categorías en una sola interfaz.',
+    'Mantén contexto sin perder tiempo entre vistas o formularios.'
   ];
 
   f(name: string) {
@@ -52,7 +53,7 @@ export class RegisterComponent {
   }
 
   togglePassword(): void {
-    this.showPwd.update(v => !v);
+    this.showPwd.update(value => !value);
   }
 
   strengthLevel(): 'weak' | 'medium' | 'strong' {
@@ -67,18 +68,19 @@ export class RegisterComponent {
       medium: 'Media',
       strong: 'Fuerte'
     };
+
     return map[this.strengthLevel()];
   }
 
   updateStrength(): void {
-    const val: string = this.f('password').value ?? '';
+    const value: string = this.f('password').value ?? '';
     let score = 0;
 
-    if (val.length >= 8) score += 25;
-    if (val.length >= 12) score += 15;
-    if (/[A-Z]/.test(val)) score += 20;
-    if (/[0-9]/.test(val)) score += 20;
-    if (/[^A-Za-z0-9]/.test(val)) score += 20;
+    if (value.length >= 8) score += 25;
+    if (value.length >= 12) score += 15;
+    if (/[A-Z]/.test(value)) score += 20;
+    if (/[0-9]/.test(value)) score += 20;
+    if (/[^A-Za-z0-9]/.test(value)) score += 20;
 
     this.strengthPct = Math.min(100, score);
   }
@@ -94,15 +96,15 @@ export class RegisterComponent {
 
     this.authService.register(this.form.getRawValue()).subscribe({
       next: () => {
-        this.toast.success('¡Cuenta creada!', 'Ya puedes empezar a usar TaskFlow');
+        this.toast.success('Cuenta creada', 'Tu workspace está listo para empezar');
         this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.errorMsg.set(
           err.status === 409
-            ? 'Este email ya está registrado'
-            : 'Error al crear la cuenta. Inténtalo de nuevo.'
+            ? 'Ese email ya está registrado.'
+            : 'No hemos podido crear tu cuenta. Inténtalo de nuevo.'
         );
       }
     });

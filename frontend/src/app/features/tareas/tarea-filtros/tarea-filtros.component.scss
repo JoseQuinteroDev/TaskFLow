@@ -1,80 +1,65 @@
 .filtros-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 14px;
 }
 
-.search-wrapper {
+.search-shell {
   position: relative;
 }
 
-.search-icon {
+.search-shell__icon {
   position: absolute;
-  left: 12px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--clr-text-muted);
+  color: var(--text-subtle);
   pointer-events: none;
 }
 
-.search-input {
-  padding-left: 38px;
-  padding-right: 36px;
+.search-shell__input {
+  padding-left: 44px;
+  padding-right: 42px;
 }
 
-.search-clear {
+.search-shell__clear {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
+  width: 32px;
+  height: 32px;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--clr-text-muted);
-  display: flex;
-  align-items: center;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-subtle);
+  display: grid;
+  place-items: center;
+}
 
-  &:hover {
-    color: var(--clr-text);
-  }
+.search-shell__clear:hover {
+  color: var(--text-strong);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .filters-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 10px;
 }
 
-.form-control-select {
-  height: 36px;
-  padding: 0 32px 0 12px;
-  background: var(--clr-bg-2);
-  border: 1px solid var(--clr-border);
-  border-radius: var(--radius-md);
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  color: var(--clr-text);
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  transition: border-color var(--t-fast);
+.filtros-panel__clear {
+  align-self: stretch;
+}
 
-  &:focus {
-    border-color: var(--clr-accent);
+@media (max-width: 1200px) {
+  .filters-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
 
-  &[type="date"] {
-    padding-right: 12px;
-    background-image: none;
-  }
-
-  option {
-    background: var(--clr-bg-2);
+@media (max-width: 768px) {
+  .filters-row {
+    grid-template-columns: 1fr;
   }
 }

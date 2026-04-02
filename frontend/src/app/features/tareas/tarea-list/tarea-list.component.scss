@@ -1,115 +1,134 @@
-.sort-select {
-  height: 36px;
-  padding: 0 28px 0 12px;
-  background: var(--clr-bg-2);
-  border: 1px solid var(--clr-border);
-  border-radius: var(--radius-md);
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  color: var(--clr-text);
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
+.tasks-header__actions {
+  align-items: flex-end;
+}
 
-  &:focus {
-    border-color: var(--clr-accent);
-  }
+.sort-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
 
-  option {
-    background: var(--clr-bg-2);
+  span {
+    color: var(--text-subtle);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
+}
+
+.tasks-toolbar {
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.tasks-toolbar__footer {
+  margin-top: 16px;
 }
 
 .view-toggle {
-  display: flex;
-  border: 1px solid var(--clr-border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.view-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: var(--clr-bg-2);
-  border: none;
-  cursor: pointer;
-  color: var(--clr-text-muted);
-  transition: all var(--t-fast);
+.view-toggle__button {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+}
 
-  &:hover {
-    background: var(--clr-bg-3);
-    color: var(--clr-text);
-  }
+.view-toggle__button:hover {
+  color: var(--text-strong);
+  background: rgba(255, 255, 255, 0.04);
+}
 
-  &.active {
-    background: var(--clr-accent-dim);
-    color: var(--clr-accent);
-  }
+.view-toggle__button.active {
+  color: var(--text-strong);
+  background: linear-gradient(135deg, rgba(135, 243, 176, 0.14), rgba(125, 183, 255, 0.1));
 }
 
 .estado-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-
-  &::-webkit-scrollbar {
-    height: 0;
-  }
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .estado-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 100px;
-  background: none;
-  border: 1px solid var(--clr-border);
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--clr-text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--t-fast);
-
-  &:hover {
-    background: var(--clr-bg-3);
-    color: var(--clr-text);
-  }
-
-  &.active {
-    background: var(--clr-accent-dim);
-    color: var(--clr-accent);
-    border-color: var(--clr-accent-glow);
-  }
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
-.tab-count {
-  background: var(--clr-bg-3);
-  color: var(--clr-text-muted);
-  border-radius: 100px;
-  padding: 1px 6px;
-  font-size: 0.7rem;
+.estado-tab:hover {
+  color: var(--text-strong);
+  border-color: var(--border-default);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.estado-tab.active {
+  color: var(--text-strong);
+  border-color: rgba(135, 243, 176, 0.16);
+  background: linear-gradient(135deg, rgba(135, 243, 176, 0.14), rgba(125, 183, 255, 0.08));
+}
+
+.estado-tab__count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
 }
 
 .tareas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 14px;
 }
 
 .tareas-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .tasks-header__actions {
+    align-items: stretch;
+  }
+
+  .sort-field {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .estado-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .tareas-grid {
+    grid-template-columns: 1fr;
+  }
 }

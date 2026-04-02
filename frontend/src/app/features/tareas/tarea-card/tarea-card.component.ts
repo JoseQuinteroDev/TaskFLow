@@ -1,61 +1,58 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { EventEmitter, Input, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
-    TareaResponse,
-    EstadoTarea,
-    ESTADO_LABELS,
-    PRIORIDAD_LABELS
+  EstadoTarea,
+  ESTADO_LABELS,
+  PRIORIDAD_LABELS,
+  TareaResponse
 } from '../../../core/models/tarea.model';
 
 @Component({
-    selector: 'app-tarea-card',
-    standalone: true,
-    imports: [RouterLink],
-    templateUrl: './tarea-card.component.html',
-    styleUrls: ['./tarea-card.component.scss']
+  selector: 'app-tarea-card',
+  standalone: true,
+  imports: [RouterLink],
+  templateUrl: './tarea-card.component.html',
+  styleUrl: './tarea-card.component.scss'
 })
 export class TareaCardComponent {
-    @Input() tarea!: TareaResponse;
-    @Output() completar = new EventEmitter<number>();
-    @Output() eliminar = new EventEmitter<number>();
+  @Input() tarea!: TareaResponse;
+  @Output() completar = new EventEmitter<number>();
+  @Output() eliminar = new EventEmitter<number>();
 
-    confirmDelete = signal(false);
+  estadoLabel(estado: EstadoTarea): string {
+    return ESTADO_LABELS[estado];
+  }
 
-    estadoLabel(e: EstadoTarea): string {
-        return ESTADO_LABELS[e];
-    }
+  prioridadLabel(): string {
+    return PRIORIDAD_LABELS[this.tarea.prioridad];
+  }
 
-    prioridadLabel(): string {
-        return PRIORIDAD_LABELS[this.tarea.prioridad];
-    }
+  estadoBadge(estado: EstadoTarea): string {
+    const map: Record<EstadoTarea, string> = {
+      PENDIENTE: 'badge-warning',
+      EN_PROCESO: 'badge-info',
+      COMPLETADA: 'badge-success'
+    };
 
-    estadoBadge(estado: EstadoTarea): string {
-        const map: Record<EstadoTarea, string> = {
-            PENDIENTE: 'badge-warning',
-            EN_PROCESO: 'badge-info',
-            COMPLETADA: 'badge-success'
-        };
-        return map[estado];
-    }
+    return map[estado];
+  }
 
-    prioridadBadge(): string {
-        const map = {
-            ALTA: 'badge-danger',
-            MEDIA: 'badge-warning',
-            BAJA: 'badge-neutral'
-        };
-        return map[this.tarea.prioridad];
-    }
+  prioridadBadge(): string {
+    const map = {
+      ALTA: 'badge-danger',
+      MEDIA: 'badge-warning',
+      BAJA: 'badge-neutral'
+    };
 
-    formatDate(fecha: string): string {
-        return new Date(fecha).toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'short'
-        });
-    }
+    return map[this.tarea.prioridad];
+  }
 
-    onEliminar(): void {
-        this.confirmDelete.set(true);
-    }
+  formatDate(fecha: string): string {
+    return new Intl.DateTimeFormat('es-ES', {
+      day: 'numeric',
+      month: 'short'
+    }).format(new Date(fecha));
+  }
 }

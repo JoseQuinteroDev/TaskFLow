@@ -1,112 +1,124 @@
 <div class="page-wrapper">
     <div class="page-header">
         <div>
+            <span class="page-header__eyebrow">Organization</span>
             <h1 class="page-header__title">Categorías</h1>
-            <p class="page-header__subtitle">Organiza tus tareas por temas</p>
+            <p class="page-header__subtitle">Agrupa tareas por contexto, área o tema para mantener mejor el foco.</p>
         </div>
 
-        <button class="btn btn-primary" (click)="openForm()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Nueva categoría
-        </button>
+        <div class="page-header__actions">
+            <button class="btn btn-primary" type="button" (click)="openForm()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Nueva categoría
+            </button>
+        </div>
     </div>
 
     @if (showForm()) {
-        <div class="cat-form-card animate-scale">
-            <h3 class="form-section-title">{{ editing() ? 'Editar categoría' : 'Nueva categoría' }}</h3>
+        <section class="category-form card animate-scale">
+            <div class="category-form__header">
+                <div>
+                    <h2>{{ editing() ? 'Editar categoría' : 'Nueva categoría' }}</h2>
+                    <p>Define un nombre claro y un color que ayude a reconocer el contexto al instante.</p>
+                </div>
+            </div>
 
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="cat-form">
-                <div class="form-group" style="flex:1">
-                    <label class="form-label">Nombre <span style="color:var(--clr-red)">*</span></label>
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="category-form__grid" novalidate>
+                <div class="form-group category-form__field">
+                    <label class="form-label" for="nombre">
+                        Nombre
+                        <span class="form-required">*</span>
+                    </label>
                     <input
+                            id="nombre"
                             type="text"
                             class="form-control"
                             formControlName="nombre"
-                            placeholder="ej. Trabajo, Personal, Estudio..."
+                            placeholder="Ej. Trabajo, Personal, Estudio"
                             maxlength="50"
                     />
 
                     @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
-                        <span class="form-error">El nombre debe tener entre 2 y 50 caracteres</span>
+                        <span class="form-error">Usa entre 2 y 50 caracteres.</span>
                     }
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Color</label>
+                    <label class="form-label" for="color">Color</label>
 
                     <div class="color-picker">
                         @for (color of presetColors; track color) {
                             <button
                                     type="button"
                                     class="color-swatch"
-                                    [style.background]="color"
+                                    [style.--swatch-color]="color"
                                     [class.selected]="form.get('color')?.value === color"
                                     (click)="form.get('color')?.setValue(color)"
-                                    [title]="color"
+                                    [attr.aria-label]="'Seleccionar color ' + color"
                             >
                                 @if (form.get('color')?.value === color) {
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
                                         <polyline points="20 6 9 17 4 12"/>
                                     </svg>
                                 }
                             </button>
                         }
 
-                        <input type="color" class="color-input" formControlName="color" title="Color personalizado" />
+                        <input id="color" type="color" class="color-input" formControlName="color" title="Elegir color personalizado" />
                     </div>
                 </div>
 
-                <div class="form-actions-inline">
+                <div class="category-form__actions">
                     <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
                     <button type="submit" class="btn btn-primary" [disabled]="saving() || form.invalid">
                         @if (saving()) {
                             <span class="btn-spinner"></span>
+                            Guardando...
                         } @else {
-                            {{ editing() ? 'Guardar' : 'Crear' }}
+                            {{ editing() ? 'Guardar cambios' : 'Crear categoría' }}
                         }
                     </button>
                 </div>
             </form>
-        </div>
+        </section>
     }
 
     @if (loading()) {
-        <app-loading [fullPage]="true" message="Cargando categorías..." />
+        <div class="loading-panel">
+            <app-loading [fullPage]="false" message="Cargando categorías..." />
+        </div>
     } @else if (categorias().length === 0) {
         <app-empty-state
-                title="Sin categorías"
-                description="Crea categorías para organizar mejor tus tareas"
-                icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>'
+                title="Todavía no hay categorías"
+                description="Crea la primera para dar más estructura y claridad a tus tareas."
         >
-            <button class="btn btn-primary btn-sm" style="margin-top:8px" (click)="openForm()">
-                Crear primera categoría
-            </button>
+            <button class="btn btn-primary btn-sm" type="button" (click)="openForm()">Crear categoría</button>
         </app-empty-state>
     } @else {
-        <div class="cat-grid stagger-children">
+        <div class="category-grid stagger-children">
             @for (cat of categorias(); track cat.id) {
-                <div class="cat-card">
-                    <div class="cat-card__color-bar" [style.background]="cat.color || 'var(--clr-accent)'"></div>
+                <article class="category-card" [style.--category-color]="cat.color || 'var(--accent)'">
+                    <div class="category-card__accent"></div>
 
-                    <div class="cat-card__body">
-                        <div class="cat-card__info">
-                            <div class="cat-dot" [style.background]="cat.color || 'var(--clr-accent)'"></div>
-                            <span class="cat-card__name">{{ cat.nombre }}</span>
+                    <div class="category-card__content">
+                        <div class="category-card__info">
+                            <span class="category-card__dot"></span>
+                            <strong>{{ cat.nombre }}</strong>
                         </div>
 
-                        <div class="cat-card__actions">
-                            <button class="btn-icon-sm" title="Editar" (click)="startEdit(cat)">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <div class="category-card__actions">
+                            <button class="icon-action" type="button" title="Editar categoría" (click)="startEdit(cat)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                 </svg>
                             </button>
 
-                            <button class="btn-icon-sm btn-icon-sm--danger" title="Eliminar" (click)="deleteId.set(cat.id)">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <button class="icon-action icon-action--danger" type="button" title="Eliminar categoría" (click)="deleteId.set(cat.id)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6l-1 14H6L5 6"/>
                                     <path d="M10 11v6"/>
@@ -115,7 +127,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </article>
             }
         </div>
     }
@@ -124,7 +136,8 @@
 @if (deleteId()) {
     <app-confirm-dialog
             title="Eliminar categoría"
-            message="¿Seguro que quieres eliminar esta categoría? Las tareas asociadas quedarán sin categoría."
+            message="Las tareas asociadas quedarán sin categoría. Esta acción no se puede deshacer."
+            confirmLabel="Sí, eliminar"
             (confirmed)="confirmDelete()"
             (cancelled)="deleteId.set(null)"
     />

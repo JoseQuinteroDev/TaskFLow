@@ -3,30 +3,33 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   text-align: center;
-  padding: 56px 24px;
-  gap: 12px;
 }
 
 .empty__icon {
-  width: 56px;
-  height: 56px;
-  background: var(--clr-bg-3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--clr-text-muted);
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
 }
 
 .empty__title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--clr-text);
+  color: var(--text-strong);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .empty__desc {
-  font-size: 0.875rem;
-  color: var(--clr-text-muted);
-  max-width: 300px;
+  max-width: 420px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.empty__actions {
+  margin-top: 8px;
 }

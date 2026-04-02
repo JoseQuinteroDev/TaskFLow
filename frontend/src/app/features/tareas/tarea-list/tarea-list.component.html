@@ -1,20 +1,31 @@
 <div class="page-wrapper">
     <div class="page-header">
         <div>
+            <span class="page-header__eyebrow">Task management</span>
             <h1 class="page-header__title">Mis tareas</h1>
-            <p class="page-header__subtitle">{{ totalLabel() }}</p>
+            <p class="page-header__subtitle">{{ totalLabel() }} visibles en la vista actual.</p>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select class="sort-select" (change)="onSort($event)">
-                <option value="fechaCreacion">Más recientes</option>
-                <option value="fechaLimite">Fecha límite</option>
-                <option value="prioridad">Prioridad</option>
-                <option value="titulo">Título A-Z</option>
-            </select>
+        <div class="page-header__actions tasks-header__actions">
+            <label class="sort-field">
+                <span>Ordenar</span>
+                <select class="form-control" (change)="onSort($event)" [value]="sortField">
+                    <option value="fechaCreacion">Más recientes</option>
+                    <option value="fechaLimite">Fecha límite</option>
+                    <option value="prioridad">Prioridad</option>
+                    <option value="titulo">Título A-Z</option>
+                </select>
+            </label>
 
             <div class="view-toggle">
-                <button class="view-btn" [class.active]="viewMode() === 'grid'" (click)="viewMode.set('grid')" title="Vista cuadrícula">
+                <button
+                        class="view-toggle__button"
+                        type="button"
+                        [class.active]="viewMode() === 'grid'"
+                        [attr.aria-pressed]="viewMode() === 'grid'"
+                        (click)="viewMode.set('grid')"
+                        title="Vista cuadrícula"
+                >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"/>
                         <rect x="14" y="3" width="7" height="7"/>
@@ -23,7 +34,14 @@
                     </svg>
                 </button>
 
-                <button class="view-btn" [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')" title="Vista lista">
+                <button
+                        class="view-toggle__button"
+                        type="button"
+                        [class.active]="viewMode() === 'list'"
+                        [attr.aria-pressed]="viewMode() === 'list'"
+                        (click)="viewMode.set('list')"
+                        title="Vista lista"
+                >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="21" y2="6"/>
                         <line x1="8" y1="12" x2="21" y2="12"/>
@@ -36,7 +54,7 @@
             </div>
 
             <a routerLink="/tareas/nueva" class="btn btn-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -45,35 +63,38 @@
         </div>
     </div>
 
-    <app-tarea-filtros
-            [categorias]="categorias()"
-            (filtrosChange)="onFiltrosChange($event)"
-    />
+    <section class="tasks-toolbar card">
+        <app-tarea-filtros
+                [categorias]="categorias()"
+                (filtrosChange)="onFiltrosChange($event)"
+        />
 
-    <div class="estado-tabs">
-        @for (tab of estadoTabs; track tab.value) {
-            <button
-                    class="estado-tab"
-                    [class.active]="activeTab() === tab.value"
-                    (click)="setTab(tab.value)"
-            >
-                {{ tab.label }}
-                <span class="tab-count">{{ countByEstado(tab.value) }}</span>
-            </button>
-        }
-    </div>
+        <div class="tasks-toolbar__footer">
+            <div class="estado-tabs" role="tablist" aria-label="Filtrar tareas por estado">
+                @for (tab of estadoTabs; track tab.value) {
+                    <button
+                            class="estado-tab"
+                            type="button"
+                            role="tab"
+                            [class.active]="activeTab() === tab.value"
+                            [attr.aria-selected]="activeTab() === tab.value"
+                            (click)="setTab(tab.value)"
+                    >
+                        <span>{{ tab.label }}</span>
+                        <span class="estado-tab__count">{{ countByEstado(tab.value) }}</span>
+                    </button>
+                }
+            </div>
+        </div>
+    </section>
 
     @if (loading()) {
-        <app-loading [fullPage]="true" message="Cargando tareas..." />
+        <div class="loading-panel">
+            <app-loading [fullPage]="false" message="Cargando tareas..." />
+        </div>
     } @else if (visibleTareas().length === 0) {
-        <app-empty-state
-                [title]="emptyTitle()"
-                [description]="emptyDesc()"
-                icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
-        >
-            <a routerLink="/tareas/nueva" class="btn btn-primary btn-sm" style="margin-top:8px">
-                Crear primera tarea
-            </a>
+        <app-empty-state [title]="emptyTitle()" [description]="emptyDesc()">
+            <a routerLink="/tareas/nueva" class="btn btn-primary btn-sm">Crear tarea</a>
         </app-empty-state>
     } @else {
         <div [class]="viewMode() === 'grid' ? 'tareas-grid stagger-children' : 'tareas-list stagger-children'">
@@ -91,7 +112,7 @@
 @if (deleteId()) {
     <app-confirm-dialog
             title="Eliminar tarea"
-            message="¿Seguro que quieres eliminar esta tarea? Esta acción no se puede deshacer."
+            message="Vas a borrar esta tarea de forma permanente. Esta acción no se puede deshacer."
             confirmLabel="Sí, eliminar"
             (confirmed)="confirmDelete()"
             (cancelled)="deleteId.set(null)"
