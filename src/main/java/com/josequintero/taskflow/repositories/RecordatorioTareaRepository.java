@@ -14,4 +14,6 @@ public interface RecordatorioTareaRepository extends JpaRepository<RecordatorioT
             TipoRecordatorioTarea tipo,
             CanalNotificacion canal
     );
+
+    void deleteByTareaId(Long tareaId);
 }

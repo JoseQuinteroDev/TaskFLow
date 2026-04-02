@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
              AND t.estado <> com.josequintero.taskflow.model.enums.EstadoTarea.COMPLETADA
            ORDER BY t.fechaLimite ASC
            """)
-    List<Tarea> obtenerTareasVencidas(Long usuarioId, LocalDateTime referencia);
+    List<Tarea> obtenerTareasVencidas(Long usuarioId, Instant referencia);
 
     @Query("""
            SELECT COUNT(t)
@@ -50,7 +50,7 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
              AND t.fechaLimite < :referencia
              AND t.estado <> com.josequintero.taskflow.model.enums.EstadoTarea.COMPLETADA
            """)
-    long contarTareasVencidas(Long usuarioId, LocalDateTime referencia);
+    long contarTareasVencidas(Long usuarioId, Instant referencia);
 
     @Query("""
            SELECT t
@@ -59,7 +59,7 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
              AND t.fechaLimite BETWEEN :desde AND :hasta
            ORDER BY t.prioridad DESC, t.fechaCreacion DESC
            """)
-    List<Tarea> obtenerTareasPorFechaLimite(Long usuarioId, LocalDateTime desde, LocalDateTime hasta);
+    List<Tarea> obtenerTareasPorFechaLimite(Long usuarioId, Instant desde, Instant hasta);
 
     @Query("""
            SELECT t
@@ -73,10 +73,10 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
            """)
     List<Tarea> buscarPorTextoEnTituloYDescripcion(Long usuarioId, String texto);
 
-    List<Tarea> findByEstadoNotAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+    List<Tarea> findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
             EstadoTarea estado,
-            LocalDateTime desde,
-            LocalDateTime hasta
+            Instant desde,
+            Instant hasta
     );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

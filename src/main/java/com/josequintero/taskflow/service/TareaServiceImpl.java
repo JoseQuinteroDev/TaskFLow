@@ -14,11 +14,13 @@ import com.josequintero.taskflow.model.Tarea;
 import com.josequintero.taskflow.model.Usuario;
 import com.josequintero.taskflow.model.enums.EstadoTarea;
 import com.josequintero.taskflow.repositories.CategoriaRepository;
+import com.josequintero.taskflow.repositories.RecordatorioTareaRepository;
 import com.josequintero.taskflow.repositories.TareaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class TareaServiceImpl implements TareaService {
 
     private final TareaRepository tareaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final RecordatorioTareaRepository recordatorioTareaRepository;
     private final TareaMapper tareaMapper;
     private final CurrentUserService currentUserService;
     private final TareaTemporalService tareaTemporalService;
@@ -33,12 +36,14 @@ public class TareaServiceImpl implements TareaService {
     public TareaServiceImpl(
             TareaRepository tareaRepository,
             CategoriaRepository categoriaRepository,
+            RecordatorioTareaRepository recordatorioTareaRepository,
             TareaMapper tareaMapper,
             CurrentUserService currentUserService,
             TareaTemporalService tareaTemporalService
     ) {
         this.tareaRepository = tareaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.recordatorioTareaRepository = recordatorioTareaRepository;
         this.tareaMapper = tareaMapper;
         this.currentUserService = currentUserService;
         this.tareaTemporalService = tareaTemporalService;
@@ -65,7 +70,8 @@ public class TareaServiceImpl implements TareaService {
     @Transactional
     public TareaResponseDto create(TareaCreateRequestDto request) {
         Usuario currentUser = currentUserService.getCurrentUser();
-        LocalDateTime fechaLimite = parseDeadlineForCreate(request.getFechaLimite());
+        Instant fechaLimite = parseDeadlineForCreate(request.getFechaLimite(), currentUser.getTimezone());
+        validateReminderConfig(request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes(), fechaLimite);
         Categoria categoria = resolveCategory(request.getCategoriaId(), currentUser.getId());
 
         Tarea tarea = tareaMapper.toEntity(request, fechaLimite, currentUser, categoria);
@@ -77,10 +83,26 @@ public class TareaServiceImpl implements TareaService {
     public TareaResponseDto update(Long id, TareaUpdateRequestDto request) {
         Usuario currentUser = currentUserService.getCurrentUser();
         Tarea tarea = findOwnedTask(id, currentUser.getId());
-        LocalDateTime fechaLimite = tareaTemporalService.parseFechaLimite(request.getFechaLimite());
+        Instant fechaLimite = tareaTemporalService.parseFechaLimite(request.getFechaLimite(), currentUser.getTimezone());
+        validateReminderConfig(request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes(), fechaLimite);
         Categoria categoria = resolveCategory(request.getCategoriaId(), currentUser.getId());
+        Instant previousDeadline = tarea.getFechaLimite();
+        Boolean previousReminderActive = tarea.getRecordatorioActivo();
+        Integer previousReminderMinutes = tarea.getRecordatorioMinutosAntes();
+        EstadoTarea previousEstado = tarea.getEstado();
 
         tareaMapper.updateEntity(tarea, request, fechaLimite, categoria);
+
+        if (reminderStateRequiresReset(
+                previousDeadline,
+                previousReminderActive,
+                previousReminderMinutes,
+                previousEstado,
+                tarea
+        )) {
+            recordatorioTareaRepository.deleteByTareaId(tarea.getId());
+        }
+
         return tareaMapper.toResponseDto(tarea);
     }
 
@@ -88,7 +110,9 @@ public class TareaServiceImpl implements TareaService {
     @Transactional
     public void delete(Long id) {
         Usuario currentUser = currentUserService.getCurrentUser();
-        tareaRepository.delete(findOwnedTask(id, currentUser.getId()));
+        Tarea tarea = findOwnedTask(id, currentUser.getId());
+        recordatorioTareaRepository.deleteByTareaId(tarea.getId());
+        tareaRepository.delete(tarea);
     }
 
     @Override
@@ -97,6 +121,7 @@ public class TareaServiceImpl implements TareaService {
         Usuario currentUser = currentUserService.getCurrentUser();
         Tarea tarea = findOwnedTask(id, currentUser.getId());
         tarea.setEstado(EstadoTarea.COMPLETADA);
+        recordatorioTareaRepository.deleteByTareaId(tarea.getId());
         return tareaMapper.toResponseDto(tarea);
     }
 
@@ -105,7 +130,13 @@ public class TareaServiceImpl implements TareaService {
     public TareaResponseDto cambiarEstado(Long id, CambiarEstadoRequestDto request) {
         Usuario currentUser = currentUserService.getCurrentUser();
         Tarea tarea = findOwnedTask(id, currentUser.getId());
+        EstadoTarea previousEstado = tarea.getEstado();
         tarea.setEstado(request.getEstado());
+
+        if (previousEstado != request.getEstado()) {
+            recordatorioTareaRepository.deleteByTareaId(tarea.getId());
+        }
+
         return tareaMapper.toResponseDto(tarea);
     }
 
@@ -114,7 +145,7 @@ public class TareaServiceImpl implements TareaService {
     public TareaResumenDto getResumen() {
         Usuario currentUser = currentUserService.getCurrentUser();
         Long usuarioId = currentUser.getId();
-        LocalDateTime ahora = tareaTemporalService.ahora();
+        Instant ahora = tareaTemporalService.ahora();
 
         return TareaResumenDto.builder()
                 .total(tareaRepository.countByUsuarioId(usuarioId))
@@ -134,8 +165,8 @@ public class TareaServiceImpl implements TareaService {
                 filtros.getTexto(),
                 filtros.getEstado(),
                 filtros.getPrioridad(),
-                tareaTemporalService.parseFiltroDesde(filtros.getDesde()),
-                tareaTemporalService.parseFiltroHasta(filtros.getHasta()),
+                tareaTemporalService.parseFiltroDesde(filtros.getDesde(), currentUser.getTimezone()),
+                tareaTemporalService.parseFiltroHasta(filtros.getHasta(), currentUser.getTimezone()),
                 filtros.getCategoriaId()
         );
 
@@ -155,16 +186,47 @@ public class TareaServiceImpl implements TareaService {
         }
 
         return categoriaRepository.findByIdAndUsuarioId(categoriaId, userId)
-                .orElseThrow(() -> new BusinessException("La categoría indicada no existe o no pertenece al usuario"));
+                .orElseThrow(() -> new BusinessException("La categoria indicada no existe o no pertenece al usuario"));
     }
 
-    private LocalDateTime parseDeadlineForCreate(String rawValue) {
-        LocalDateTime fechaLimite = tareaTemporalService.parseFechaLimite(rawValue);
+    private Instant parseDeadlineForCreate(String rawValue, String timezone) {
+        Instant fechaLimite = tareaTemporalService.parseFechaLimite(rawValue, timezone);
 
         if (fechaLimite != null && fechaLimite.isBefore(tareaTemporalService.ahora())) {
-            throw new BusinessException("La fecha límite debe ser actual o futura");
+            throw new BusinessException("La fecha limite debe ser actual o futura");
         }
 
         return fechaLimite;
+    }
+
+    private void validateReminderConfig(Boolean recordatorioActivo, Integer recordatorioMinutosAntes, Instant fechaLimite) {
+        if (!Boolean.TRUE.equals(recordatorioActivo)) {
+            return;
+        }
+
+        if (fechaLimite == null) {
+            throw new BusinessException("Debes indicar una fecha limite para activar un recordatorio");
+        }
+
+        if (recordatorioMinutosAntes == null) {
+            throw new BusinessException("Indica cuantos minutos antes quieres recibir el recordatorio");
+        }
+
+        if (recordatorioMinutosAntes < 5 || recordatorioMinutosAntes > 10080) {
+            throw new BusinessException("El recordatorio debe estar entre 5 y 10080 minutos antes");
+        }
+    }
+
+    private boolean reminderStateRequiresReset(
+            Instant previousDeadline,
+            Boolean previousReminderActive,
+            Integer previousReminderMinutes,
+            EstadoTarea previousEstado,
+            Tarea tarea
+    ) {
+        return !Objects.equals(previousDeadline, tarea.getFechaLimite())
+                || !Objects.equals(previousReminderActive, tarea.getRecordatorioActivo())
+                || !Objects.equals(previousReminderMinutes, tarea.getRecordatorioMinutosAntes())
+                || previousEstado != tarea.getEstado();
     }
 }

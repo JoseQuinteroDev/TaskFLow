@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(
@@ -87,7 +88,7 @@ public class RecordatorioTarea {
             estado = EstadoEnvioNotificacion.PENDIENTE;
         }
         if (fechaCreacion == null) {
-            fechaCreacion = LocalDateTime.now();
+            fechaCreacion = LocalDateTime.now(ZoneOffset.UTC);
         }
     }
 }

@@ -30,7 +30,8 @@
                         type="button"
                         class="icon-button icon-button--desktop"
                         (click)="toggleSidebar()"
-                        [attr.aria-label]="sidebarCollapsed() ? 'Expandir sidebar' : 'Colapsar sidebar'"
+                        [attr.aria-label]="sidebarCollapsed() ? 'Expandir sidebar' : 'Compactar menu'"
+                        [title]="sidebarCollapsed() ? 'Expandir sidebar' : 'Compactar menu'"
                 >
                     @if (sidebarCollapsed()) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -84,40 +85,42 @@
         </div>
 
         <div class="sidebar__footer">
-            <div class="user-card" [class.user-card--compact]="sidebarCollapsed()">
-                <div class="user-avatar">{{ userInitial() }}</div>
+            @if (!sidebarCollapsed()) {
+                <span class="sidebar__eyebrow sidebar__eyebrow--footer">Cuenta</span>
+            }
+
+            <div class="account-panel" [class.account-panel--compact]="sidebarCollapsed()">
+                <div class="user-card" [class.user-card--compact]="sidebarCollapsed()">
+                    <div class="user-avatar">{{ userInitial() }}</div>
+
+                    @if (!sidebarCollapsed()) {
+                        <div class="user-details">
+                            <strong>{{ userName() }}</strong>
+                            <span>{{ userEmail() }}</span>
+                            <small>{{ userRoleLabel() }}</small>
+                        </div>
+                    }
+                </div>
 
                 @if (!sidebarCollapsed()) {
-                    <div class="user-details">
-                        <strong>{{ userEmail() }}</strong>
-                        <span>{{ isAdmin() ? 'Administrador' : 'Miembro del workspace' }}</span>
-                    </div>
-                }
-            </div>
-
-            @if (!sidebarCollapsed()) {
-                <div class="sidebar__footer-actions">
-                    <button class="btn btn-secondary btn-sm" type="button" (click)="toggleSidebar()">
-                        Compactar menu
-                    </button>
-                    <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">
+                    <button class="btn btn-ghost btn-sm account-panel__logout" type="button" (click)="logout()">
                         Cerrar sesion
                     </button>
-                </div>
-            } @else {
-                <button
-                        class="icon-button icon-button--logout"
-                        type="button"
-                        (click)="logout()"
-                        aria-label="Cerrar sesion"
-                >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                </button>
-            }
+                } @else {
+                    <button
+                            class="icon-button icon-button--logout"
+                            type="button"
+                            (click)="logout()"
+                            aria-label="Cerrar sesion"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </button>
+                }
+            </div>
         </div>
     </aside>
 
@@ -148,7 +151,7 @@
             <div class="shell__topbar-user">
                 <div class="shell__user-pill">
                     <span class="status-dot"></span>
-                    <span>{{ userEmail() }}</span>
+                    <span>{{ userName() }}</span>
                 </div>
             </div>
         </header>

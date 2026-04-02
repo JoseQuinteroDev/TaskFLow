@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -50,77 +51,81 @@ public class RecordatorioTareaService {
             return;
         }
 
-        LocalDateTime ahora = tareaTemporalService.ahora();
+        Instant ahora = tareaTemporalService.ahora();
+        Instant ventanaInicio = ahora.minus(reminderProperties.getOverdueWindow());
+        Instant ventanaFin = ahora.plus(reminderProperties.getSoonThreshold());
 
-        procesar(
-                tareaRepository.findByEstadoNotAndFechaLimiteBetweenOrderByFechaLimiteAsc(
-                        EstadoTarea.COMPLETADA,
-                        ahora,
-                        ahora.plus(reminderProperties.getSoonThreshold())
-                ),
-                TipoRecordatorioTarea.PROXIMO_VENCIMIENTO,
-                ahora
+        List<Tarea> tareas = tareaRepository.findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+                EstadoTarea.COMPLETADA,
+                ventanaInicio,
+                ventanaFin
         );
 
-        procesar(
-                tareaRepository.findByEstadoNotAndFechaLimiteBetweenOrderByFechaLimiteAsc(
-                        EstadoTarea.COMPLETADA,
-                        ahora.minus(reminderProperties.getOverdueWindow()),
-                        ahora
-                ),
-                TipoRecordatorioTarea.VENCIDA,
-                ahora
-        );
-    }
-
-    private void procesar(List<Tarea> tareas, TipoRecordatorioTarea tipo, LocalDateTime ahora) {
         for (Tarea tarea : tareas) {
-            if (tarea.getFechaLimite() == null || !Boolean.TRUE.equals(tarea.getUsuario().getActivo())) {
+            if (tarea.getFechaLimite() == null
+                    || !Boolean.TRUE.equals(tarea.getUsuario().getActivo())
+                    || !tarea.tieneRecordatorioActivo()) {
                 continue;
             }
 
-            RecordatorioTarea recordatorio = recordatorioTareaRepository
-                    .findByTareaIdAndTipoAndCanal(tarea.getId(), tipo, CanalNotificacion.EMAIL)
-                    .orElseGet(() -> RecordatorioTarea.builder()
-                            .tarea(tarea)
-                            .tipo(tipo)
-                            .canal(CanalNotificacion.EMAIL)
-                            .destinatario(tarea.getUsuario().getEmail())
-                            .fechaProgramada(ahora)
-                            .build());
-
-            if (recordatorio.getEstado() == EstadoEnvioNotificacion.ENVIADO) {
+            if (!tarea.getFechaLimite().isAfter(ahora)) {
+                if (!tarea.getFechaLimite().isBefore(ahora.minus(reminderProperties.getOverdueWindow()))) {
+                    enviarSiCorresponde(tarea, TipoRecordatorioTarea.VENCIDA, ahora);
+                }
                 continue;
             }
 
-            recordatorio.setFechaProgramada(ahora);
-            recordatorio.setDestinatario(tarea.getUsuario().getEmail());
+            Instant fechaDisparo = tarea.getFechaLimite()
+                    .minus(tarea.getRecordatorioMinutosAntes(), ChronoUnit.MINUTES);
 
-            try {
-                emailSender.send(buildMessage(tarea, tipo));
-                recordatorio.setEstado(EstadoEnvioNotificacion.ENVIADO);
-                recordatorio.setFechaEnvio(ahora);
-                recordatorio.setError(null);
-            } catch (Exception ex) {
-                log.warn("No se pudo enviar el recordatorio {} de la tarea {}: {}", tipo, tarea.getId(), ex.getMessage());
-                recordatorio.setEstado(EstadoEnvioNotificacion.FALLIDO);
-                recordatorio.setError(truncate(ex.getMessage()));
+            if (!ahora.isBefore(fechaDisparo)) {
+                enviarSiCorresponde(tarea, TipoRecordatorioTarea.PROXIMO_VENCIMIENTO, ahora);
             }
-
-            recordatorioTareaRepository.save(recordatorio);
         }
     }
 
+    private void enviarSiCorresponde(Tarea tarea, TipoRecordatorioTarea tipo, Instant ahora) {
+        RecordatorioTarea recordatorio = recordatorioTareaRepository
+                .findByTareaIdAndTipoAndCanal(tarea.getId(), tipo, CanalNotificacion.EMAIL)
+                .orElseGet(() -> RecordatorioTarea.builder()
+                        .tarea(tarea)
+                        .tipo(tipo)
+                        .canal(CanalNotificacion.EMAIL)
+                        .destinatario(tarea.getUsuario().getEmail())
+                        .fechaProgramada(tareaTemporalService.toUtcLocalDateTime(ahora))
+                        .build());
+
+        if (recordatorio.getEstado() == EstadoEnvioNotificacion.ENVIADO) {
+            return;
+        }
+
+        recordatorio.setFechaProgramada(tareaTemporalService.toUtcLocalDateTime(ahora));
+        recordatorio.setDestinatario(tarea.getUsuario().getEmail());
+
+        try {
+            emailSender.send(buildMessage(tarea, tipo));
+            recordatorio.setEstado(EstadoEnvioNotificacion.ENVIADO);
+            recordatorio.setFechaEnvio(tareaTemporalService.toUtcLocalDateTime(ahora));
+            recordatorio.setError(null);
+        } catch (Exception ex) {
+            log.warn("No se pudo enviar el recordatorio {} de la tarea {}: {}", tipo, tarea.getId(), ex.getMessage());
+            recordatorio.setEstado(EstadoEnvioNotificacion.FALLIDO);
+            recordatorio.setError(truncate(ex.getMessage()));
+        }
+
+        recordatorioTareaRepository.save(recordatorio);
+    }
+
     private EmailMessage buildMessage(Tarea tarea, TipoRecordatorioTarea tipo) {
-        String fechaLimite = tareaTemporalService.formatForEmail(tarea.getFechaLimite());
+        String fechaLimite = tareaTemporalService.formatForEmail(tarea.getFechaLimite(), tarea.getUsuario().getTimezone());
         String subject = switch (tipo) {
-            case PROXIMO_VENCIMIENTO -> "TaskFlow · Tu tarea vence pronto";
-            case VENCIDA -> "TaskFlow · Tienes una tarea vencida";
+            case PROXIMO_VENCIMIENTO -> "TaskFlow | Tu tarea vence pronto";
+            case VENCIDA -> "TaskFlow | Tienes una tarea vencida";
         };
 
         String intro = switch (tipo) {
-            case PROXIMO_VENCIMIENTO -> "Te recordamos que esta tarea está cerca de su vencimiento.";
-            case VENCIDA -> "Esta tarea ya ha superado su fecha límite y necesita atención.";
+            case PROXIMO_VENCIMIENTO -> "Te avisamos de que esta tarea esta cerca de su vencimiento.";
+            case VENCIDA -> "Esta tarea ya ha superado su fecha limite y necesita atencion.";
         };
 
         String textBody = """
@@ -128,10 +133,17 @@ public class RecordatorioTareaService {
 
                 Tarea: %s
                 Prioridad: %s
-                Fecha límite: %s
+                Fecha limite: %s
+                Recordatorio: %s minutos antes
 
-                Revisa TaskFlow para actualizar su estado o ajustar la planificación.
-                """.formatted(intro, tarea.getTitulo(), tarea.getPrioridad().name(), fechaLimite);
+                Revisa TaskFlow para actualizar su estado o ajustar la planificacion.
+                """.formatted(
+                intro,
+                tarea.getTitulo(),
+                tarea.getPrioridad().name(),
+                fechaLimite,
+                tarea.getRecordatorioMinutosAntes()
+        );
 
         String htmlBody = """
                 <html>
@@ -145,13 +157,22 @@ public class RecordatorioTareaService {
                         <p style="margin:0 0 16px;font-size:18px;color:#f4f7fb;font-weight:700;">%s</p>
                         <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Prioridad</p>
                         <p style="margin:0 0 16px;color:#f4f7fb;">%s</p>
-                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha límite</p>
-                        <p style="margin:0;color:#87f3b0;font-weight:700;">%s</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha limite</p>
+                        <p style="margin:0 0 16px;color:#87f3b0;font-weight:700;">%s</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Recordatorio</p>
+                        <p style="margin:0;color:#f4f7fb;">%s minutos antes</p>
                       </div>
                     </div>
                   </body>
                 </html>
-                """.formatted(subject, intro, tarea.getTitulo(), tarea.getPrioridad().name(), fechaLimite);
+                """.formatted(
+                subject,
+                intro,
+                tarea.getTitulo(),
+                tarea.getPrioridad().name(),
+                fechaLimite,
+                tarea.getRecordatorioMinutosAntes()
+        );
 
         return new EmailMessage(tarea.getUsuario().getEmail(), subject, textBody, htmlBody);
     }

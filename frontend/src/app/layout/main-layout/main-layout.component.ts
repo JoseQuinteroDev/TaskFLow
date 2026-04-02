@@ -22,8 +22,10 @@ export class MainLayoutComponent {
   mobileMenuOpen = signal(false);
 
   readonly isAdmin = this.authService.isAdmin;
+  readonly userName = () => this.authService.currentUser()?.nombre ?? 'Usuario';
   readonly userEmail = () => this.authService.currentUser()?.email ?? '';
-  readonly userInitial = () => (this.authService.currentUser()?.email ?? 'U')[0].toUpperCase();
+  readonly userInitial = () => (this.userName().trim().charAt(0) || 'U').toUpperCase();
+  readonly userRoleLabel = () => (this.isAdmin() ? 'Administrador' : 'Miembro del workspace');
 
   navItems: NavItem[] = [
     {

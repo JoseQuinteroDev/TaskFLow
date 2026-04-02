@@ -29,27 +29,31 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final TareaTemporalService tareaTemporalService;
 
     public AuthServiceImpl(
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
-            JwtService jwtService
+            JwtService jwtService,
+            TareaTemporalService tareaTemporalService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.tareaTemporalService = tareaTemporalService;
     }
 
     @Override
     public AuthResponseDto register(RegisterRequestDto request) {
         String normalizedEmail = normalizeEmail(request.getEmail());
+        String normalizedTimezone = tareaTemporalService.normalizeTimezone(request.getTimezone(), "Europe/Madrid");
 
         if (usuarioRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new BusinessException("El email ya está registrado");
+            throw new BusinessException("El email ya esta registrado");
         }
 
         Rol rolUser = rolRepository.findByNombre(NombreRol.ROLE_USER)
@@ -58,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
         Usuario usuario = Usuario.builder()
                 .nombre(request.getNombre().trim())
                 .email(normalizedEmail)
+                .timezone(normalizedTimezone)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .activo(true)
                 .roles(Set.of(rolUser))
@@ -66,21 +71,13 @@ public class AuthServiceImpl implements AuthService {
         usuarioRepository.save(usuario);
 
         String token = jwtService.generateTokenByEmail(usuario.getEmail());
-
-        return AuthResponseDto.builder()
-                .token(token)
-                .tipoToken("Bearer")
-                .email(usuario.getEmail())
-                .roles(usuario.getRoles()
-                        .stream()
-                        .map(rol -> rol.getNombre().name())
-                        .collect(Collectors.toSet()))
-                .build();
+        return buildAuthResponse(usuario, token);
     }
 
     @Override
     public AuthResponseDto login(LoginRequestDto request) {
         String normalizedEmail = normalizeEmail(request.getEmail());
+        String normalizedTimezone = tareaTemporalService.normalizeTimezone(request.getTimezone(), "Europe/Madrid");
 
         Authentication authentication = authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken.unauthenticated(
@@ -94,12 +91,21 @@ public class AuthServiceImpl implements AuthService {
         Usuario usuario = usuarioRepository.findByEmailIgnoreCase(userDetails.getUsername())
                 .orElseThrow(() -> new BusinessException("Usuario autenticado no encontrado"));
 
-        String token = jwtService.generateToken(userDetails);
+        if (!normalizedTimezone.equals(usuario.getTimezone())) {
+            usuario.setTimezone(normalizedTimezone);
+        }
 
+        String token = jwtService.generateToken(userDetails);
+        return buildAuthResponse(usuario, token);
+    }
+
+    private AuthResponseDto buildAuthResponse(Usuario usuario, String token) {
         return AuthResponseDto.builder()
                 .token(token)
                 .tipoToken("Bearer")
+                .nombre(usuario.getNombre())
                 .email(usuario.getEmail())
+                .timezone(usuario.getTimezone())
                 .roles(usuario.getRoles()
                         .stream()
                         .map(rol -> rol.getNombre().name())

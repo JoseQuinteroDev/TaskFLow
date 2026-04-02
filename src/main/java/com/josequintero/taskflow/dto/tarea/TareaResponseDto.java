@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,9 +24,11 @@ public class TareaResponseDto {
     private String descripcion;
     private PrioridadTarea prioridad;
     private EstadoTarea estado;
-    private LocalDateTime fechaLimite;
+    private Instant fechaLimite;
     private boolean vencida;
     private boolean completada;
+    private boolean recordatorioActivo;
+    private Integer recordatorioMinutosAntes;
     private CategoriaResumenDto categoria;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;

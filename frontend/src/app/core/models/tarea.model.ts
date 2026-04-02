@@ -9,6 +9,8 @@ export interface TareaCreateRequest {
     prioridad: PrioridadTarea;
     fechaLimite?: string;
     categoriaId?: number;
+    recordatorioActivo?: boolean;
+    recordatorioMinutosAntes?: number;
 }
 
 export interface TareaUpdateRequest {
@@ -18,6 +20,8 @@ export interface TareaUpdateRequest {
     estado: EstadoTarea;
     fechaLimite?: string;
     categoriaId?: number;
+    recordatorioActivo?: boolean;
+    recordatorioMinutosAntes?: number;
 }
 
 export interface TareaResponse {
@@ -29,6 +33,8 @@ export interface TareaResponse {
     fechaLimite?: string;
     vencida: boolean;
     completada: boolean;
+    recordatorioActivo: boolean;
+    recordatorioMinutosAntes?: number;
     fechaCreacion: string;
     categoria?: CategoriaResponse;
 }
@@ -60,3 +66,11 @@ export const PRIORIDAD_LABELS: Record<PrioridadTarea, string> = {
     MEDIA: 'Media',
     ALTA: 'Alta'
 };
+
+export const RECORDATORIO_OPTIONS = [
+    { value: 15, label: '15 minutos antes' },
+    { value: 30, label: '30 minutos antes' },
+    { value: 60, label: '1 hora antes' },
+    { value: 180, label: '3 horas antes' },
+    { value: 1440, label: '24 horas antes' }
+] as const;

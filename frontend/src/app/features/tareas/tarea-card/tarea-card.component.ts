@@ -1,4 +1,4 @@
-import { EventEmitter, Input, Output } from '@angular/core';
+import { EventEmitter, Input, Output, inject } from '@angular/core';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -6,8 +6,10 @@ import {
   EstadoTarea,
   ESTADO_LABELS,
   PRIORIDAD_LABELS,
+  RECORDATORIO_OPTIONS,
   TareaResponse
 } from '../../../core/models/tarea.model';
+import { TimezoneService } from '../../../core/services/timezone.service';
 
 @Component({
   selector: 'app-tarea-card',
@@ -17,6 +19,8 @@ import {
   styleUrl: './tarea-card.component.scss'
 })
 export class TareaCardComponent {
+  private timezoneService = inject(TimezoneService);
+
   @Input() tarea!: TareaResponse;
   @Output() completar = new EventEmitter<number>();
   @Output() eliminar = new EventEmitter<number>();
@@ -27,6 +31,10 @@ export class TareaCardComponent {
 
   prioridadLabel(): string {
     return PRIORIDAD_LABELS[this.tarea.prioridad];
+  }
+
+  reminderLabel(): string {
+    return RECORDATORIO_OPTIONS.find(option => option.value === this.tarea.recordatorioMinutosAntes)?.label ?? 'Recordatorio activo';
   }
 
   estadoBadge(estado: EstadoTarea): string {
@@ -50,9 +58,11 @@ export class TareaCardComponent {
   }
 
   formatDate(fecha: string): string {
-    return new Intl.DateTimeFormat('es-ES', {
+    return this.timezoneService.format(fecha, {
       day: 'numeric',
-      month: 'short'
-    }).format(new Date(fecha));
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 }

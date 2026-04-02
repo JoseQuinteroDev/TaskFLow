@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,32 +13,33 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TareaTemporalServiceTest {
 
     private final TareaTemporalService service = new TareaTemporalService(
-            Clock.fixed(Instant.parse("2026-04-02T10:15:00Z"), ZoneId.of("Europe/Madrid"))
+            Clock.fixed(Instant.parse("2026-04-02T10:15:00Z"), ZoneId.of("Europe/Madrid")),
+            "Europe/Madrid"
     );
 
     @Test
     void parseFechaLimiteAcceptsDateTimeWithMinutes() {
-        LocalDateTime result = service.parseFechaLimite("2026-04-04T18:30");
+        Instant result = service.parseFechaLimite("2026-04-04T18:30", "Europe/Madrid");
 
-        assertEquals(LocalDateTime.of(2026, 4, 4, 18, 30), result);
+        assertEquals(Instant.parse("2026-04-04T16:30:00Z"), result);
     }
 
     @Test
     void parseFechaLimiteMapsLegacyDateOnlyToEndOfDay() {
-        LocalDateTime result = service.parseFechaLimite("2026-04-04");
+        Instant result = service.parseFechaLimite("2026-04-04", "Europe/Madrid");
 
-        assertEquals(LocalDateTime.of(2026, 4, 4, 23, 59), result);
+        assertEquals(Instant.parse("2026-04-04T21:59:00Z"), result);
     }
 
     @Test
     void parseFiltroDesdeUsesStartOfDay() {
-        LocalDateTime result = service.parseFiltroDesde("2026-04-04");
+        Instant result = service.parseFiltroDesde("2026-04-04", "Europe/Madrid");
 
-        assertEquals(LocalDateTime.of(2026, 4, 4, 0, 0), result);
+        assertEquals(Instant.parse("2026-04-03T22:00:00Z"), result);
     }
 
     @Test
     void parseFechaLimiteRejectsUnsupportedFormat() {
-        assertThrows(BusinessException.class, () -> service.parseFechaLimite("04/04/2026 18:30"));
+        assertThrows(BusinessException.class, () -> service.parseFechaLimite("04/04/2026 18:30", "Europe/Madrid"));
     }
 }

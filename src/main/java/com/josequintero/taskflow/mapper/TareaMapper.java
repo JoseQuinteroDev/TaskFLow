@@ -10,7 +10,7 @@ import com.josequintero.taskflow.model.enums.EstadoTarea;
 import com.josequintero.taskflow.service.TareaTemporalService;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Component
 public class TareaMapper {
@@ -25,7 +25,7 @@ public class TareaMapper {
 
     public Tarea toEntity(
             TareaCreateRequestDto dto,
-            LocalDateTime fechaLimite,
+            Instant fechaLimite,
             Usuario usuario,
             Categoria categoria
     ) {
@@ -38,6 +38,8 @@ public class TareaMapper {
                 .descripcion(dto.getDescripcion() == null ? null : dto.getDescripcion().trim())
                 .prioridad(dto.getPrioridad())
                 .fechaLimite(fechaLimite)
+                .recordatorioActivo(Boolean.TRUE.equals(dto.getRecordatorioActivo()))
+                .recordatorioMinutosAntes(Boolean.TRUE.equals(dto.getRecordatorioActivo()) ? dto.getRecordatorioMinutosAntes() : null)
                 .estado(EstadoTarea.PENDIENTE)
                 .usuario(usuario)
                 .categoria(categoria)
@@ -58,6 +60,8 @@ public class TareaMapper {
                 .fechaLimite(tarea.getFechaLimite())
                 .vencida(tarea.estaVencida(tareaTemporalService.ahora()))
                 .completada(tarea.estaCompletada())
+                .recordatorioActivo(Boolean.TRUE.equals(tarea.getRecordatorioActivo()))
+                .recordatorioMinutosAntes(tarea.getRecordatorioMinutosAntes())
                 .categoria(categoriaMapper.toResumenDto(tarea.getCategoria()))
                 .fechaCreacion(tarea.getFechaCreacion())
                 .fechaActualizacion(tarea.getFechaActualizacion())
@@ -67,7 +71,7 @@ public class TareaMapper {
     public void updateEntity(
             Tarea tarea,
             TareaUpdateRequestDto dto,
-            LocalDateTime fechaLimite,
+            Instant fechaLimite,
             Categoria categoria
     ) {
         if (tarea == null || dto == null) {
@@ -79,6 +83,8 @@ public class TareaMapper {
         tarea.setPrioridad(dto.getPrioridad());
         tarea.setEstado(dto.getEstado());
         tarea.setFechaLimite(fechaLimite);
+        tarea.setRecordatorioActivo(Boolean.TRUE.equals(dto.getRecordatorioActivo()));
+        tarea.setRecordatorioMinutosAntes(Boolean.TRUE.equals(dto.getRecordatorioActivo()) ? dto.getRecordatorioMinutosAntes() : null);
         tarea.setCategoria(categoria);
     }
 }

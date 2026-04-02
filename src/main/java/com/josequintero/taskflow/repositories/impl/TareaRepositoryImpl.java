@@ -10,7 +10,7 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +27,8 @@ public class TareaRepositoryImpl implements TareaRepositoryCustom {
             String texto,
             EstadoTarea estado,
             PrioridadTarea prioridad,
-            LocalDateTime fechaDesde,
-            LocalDateTime fechaHasta,
+            Instant fechaDesde,
+            Instant fechaHasta,
             Long categoriaId
     ) {
         StringBuilder jpql = new StringBuilder("""
