@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { AuthResponse, CurrentUserResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
 import { TimezoneService } from './timezone.service';
 
 @Injectable({
@@ -63,11 +63,40 @@ export class AuthService {
     }
 
     return {
-      nombre: auth.nombre,
+      nombre: this.normalizeDisplayName(auth.nombre, auth.email),
       email: auth.email,
-      timezone: auth.timezone,
+      timezone: auth.timezone || this.timezoneService.detect(),
       roles: auth.roles
     };
+  }
+
+  hydrateSession(): void {
+    const auth = this.authState();
+    if (!auth?.token) {
+      return;
+    }
+
+    this.http.get<CurrentUserResponse>(`${this.apiUrl}/me`).subscribe({
+      next: profile => {
+        this.setSession({
+          ...auth,
+          nombre: this.normalizeDisplayName(profile.nombre, profile.email),
+          email: profile.email,
+          timezone: profile.timezone || this.timezoneService.detect(),
+          roles: profile.roles?.length ? profile.roles : auth.roles
+        });
+      },
+      error: () => {
+        const normalizedName = this.normalizeDisplayName(auth.nombre, auth.email);
+        if (normalizedName !== auth.nombre || !auth.timezone) {
+          this.setSession({
+            ...auth,
+            nombre: normalizedName,
+            timezone: auth.timezone || this.timezoneService.detect()
+          });
+        }
+      }
+    });
   }
 
   private hasStorage(): boolean {
@@ -75,11 +104,13 @@ export class AuthService {
   }
 
   private setSession(auth: AuthResponse): void {
+    const normalizedAuth = this.normalizeAuth(auth);
+
     if (this.hasStorage()) {
-      localStorage.setItem(this.storageKey, JSON.stringify(auth));
+      localStorage.setItem(this.storageKey, JSON.stringify(normalizedAuth));
     }
 
-    this.authState.set(auth);
+    this.authState.set(normalizedAuth);
   }
 
   private loadAuth(): AuthResponse | null {
@@ -93,10 +124,42 @@ export class AuthService {
     }
 
     try {
-      return JSON.parse(raw) as AuthResponse;
+      return this.normalizeAuth(JSON.parse(raw) as AuthResponse);
     } catch {
       localStorage.removeItem(this.storageKey);
       return null;
     }
+  }
+
+  private normalizeAuth(auth: AuthResponse): AuthResponse {
+    return {
+      ...auth,
+      nombre: this.normalizeDisplayName(auth.nombre, auth.email),
+      timezone: auth.timezone || this.timezoneService.detect(),
+      roles: auth.roles ?? []
+    };
+  }
+
+  private normalizeDisplayName(nombre: string | null | undefined, email: string | null | undefined): string {
+    const cleanName = nombre?.trim();
+    if (cleanName) {
+      return cleanName;
+    }
+
+    const localPart = email?.split('@')[0]?.trim();
+    if (!localPart) {
+      return 'Usuario';
+    }
+
+    const normalized = localPart
+      .replace(/[._-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!normalized) {
+      return 'Usuario';
+    }
+
+    return normalized.replace(/\b\p{L}/gu, letter => letter.toUpperCase());
   }
 }

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guards';
+import { adminGuard, authGuard, guestGuard } from './core/guards/auth.guards';
 
 export const appRoutes: Routes = [
   {
@@ -45,6 +45,14 @@ export const appRoutes: Routes = [
         loadComponent: () =>
           import('./features/categorias/categorias-list/categoria-list.component').then(
             m => m.CategoriaListComponent
+          )
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-panel/admin-panel.component').then(
+            m => m.AdminPanelComponent
           )
       },
       {
