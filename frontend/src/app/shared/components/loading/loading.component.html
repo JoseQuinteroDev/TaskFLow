@@ -1,10 +1,10 @@
 @if (fullPage) {
-    <div class="loading-page">
-        <div class="spinner" [style.width.px]="size" [style.height.px]="size"></div>
-        @if (message) {
-            <p class="loading-msg">{{ message }}</p>
-        }
-    </div>
+<div class="loading-page">
+  <div class="spinner" [style.width.px]="size" [style.height.px]="size"></div>
+  @if (message) {
+  <p class="loading-msg">{{ message }}</p>
+  }
+</div>
 } @else {
-    <div class="spinner" [style.width.px]="size" [style.height.px]="size"></div>
+<div class="spinner" [style.width.px]="size" [style.height.px]="size"></div>
 }

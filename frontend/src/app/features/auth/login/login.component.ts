@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -7,57 +7,59 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [ReactiveFormsModule, RouterLink],
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.scss']
+  selector: 'app-login',
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-    form = this.fb.nonNullable.group({
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required],
-    });
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private toast = inject(ToastService);
 
-    loading = signal(false);
-    showPassword = signal(false);
-    errorMsg = signal('');
+  form = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
+  });
 
-    features = [
-        { text: 'Organiza tareas por prioridad y categoría' },
-        { text: 'Seguimiento de progreso en tiempo real' },
-        { text: 'Filtros avanzados para encontrar todo' },
-    ];
+  loading = signal(false);
+  showPassword = signal(false);
+  errorMsg = signal('');
 
-    constructor(
-        private fb: FormBuilder,
-        private authService: AuthService,
-        private router: Router,
-        private toast: ToastService,
-    ) {}
+  features = [
+    { text: 'Organiza tareas por prioridad y categoría' },
+    { text: 'Seguimiento de progreso en tiempo real' },
+    { text: 'Filtros avanzados para encontrar todo' },
+  ];
 
-    onSubmit(): void {
-        if (this.form.invalid) {
-            this.form.markAllAsTouched();
-            return;
-        }
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
 
-        this.loading.set(true);
-        this.errorMsg.set('');
-
-        this.authService.login(this.form.getRawValue()).subscribe({
-            next: () => {
-                this.toast.success('¡Bienvenido!', 'Sesión iniciada correctamente');
-                this.router.navigate(['/dashboard']);
-            },
-            error: (err: HttpErrorResponse) => {
-                this.loading.set(false);
-                this.errorMsg.set(
-                    err.status === 401
-                        ? 'Email o contraseña incorrectos'
-                        : 'Error al iniciar sesión. Inténtalo de nuevo.'
-                );
-            }
-        });
+  onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
+
+    this.loading.set(true);
+    this.errorMsg.set('');
+
+    this.authService.login(this.form.getRawValue()).subscribe({
+      next: () => {
+        this.toast.success('¡Bienvenido!', 'Sesión iniciada correctamente');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMsg.set(
+          err.status === 401
+            ? 'Email o contraseña incorrectos'
+            : 'Error al iniciar sesión. Inténtalo de nuevo.'
+        );
+      }
+    });
+  }
 }
