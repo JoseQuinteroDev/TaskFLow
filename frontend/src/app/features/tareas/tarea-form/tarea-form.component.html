@@ -11,7 +11,7 @@
             <span class="page-header__eyebrow">Task editor</span>
             <h1 class="page-header__title">{{ isEditing() ? 'Editar tarea' : 'Nueva tarea' }}</h1>
             <p class="page-header__subtitle">
-                {{ isEditing() ? 'Actualiza los detalles y mantén el seguimiento bajo control.' : 'Define el trabajo con claridad antes de ponerlo en marcha.' }}
+                {{ isEditing() ? 'Actualiza los detalles y manten el seguimiento bajo control.' : 'Define el trabajo con claridad antes de ponerlo en marcha.' }}
             </p>
         </div>
     </div>
@@ -25,13 +25,13 @@
             <form [formGroup]="form" (ngSubmit)="onSubmit()" class="task-form" novalidate>
                 <section class="form-card">
                     <div class="form-card__header">
-                        <h2>Información básica</h2>
-                        <p>Describe qué hay que hacer y deja claro el contexto.</p>
+                        <h2>Informacion basica</h2>
+                        <p>Describe que hay que hacer y deja claro el contexto.</p>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="titulo">
-                            Título
+                            Titulo
                             <span class="form-required">*</span>
                         </label>
 
@@ -40,7 +40,7 @@
                                 type="text"
                                 class="form-control"
                                 formControlName="titulo"
-                                placeholder="¿Qué necesitas hacer?"
+                                placeholder="Que necesitas hacer?"
                                 maxlength="100"
                         />
 
@@ -63,12 +63,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="descripcion">Descripción</label>
+                        <label class="form-label" for="descripcion">Descripcion</label>
                         <textarea
                                 id="descripcion"
                                 class="form-control form-control-textarea"
                                 formControlName="descripcion"
-                                placeholder="Añade contexto, criterios o notas útiles para completar la tarea."
+                                placeholder="Anade contexto, criterios o notas utiles para completar la tarea."
                                 maxlength="500"
                                 rows="5"
                         ></textarea>
@@ -81,7 +81,7 @@
 
                 <section class="form-card">
                     <div class="form-card__header">
-                        <h2>Configuración</h2>
+                        <h2>Configuracion</h2>
                         <p>Prioridad, estado y contexto operativo de la tarea.</p>
                     </div>
 
@@ -114,22 +114,61 @@
                         }
 
                         <div class="form-group">
-                            <label class="form-label" for="fechaLimite">Fecha límite</label>
+                            <label class="form-label" for="fechaLimite">Fecha limite</label>
                             <input
                                     id="fechaLimite"
-                                    type="date"
+                                    type="datetime-local"
                                     class="form-control"
                                     formControlName="fechaLimite"
-                                    [min]="today"
+                                    [min]="minDateTime"
                             />
+                            <small class="form-hint">Se guarda en UTC y se muestra en tu hora local: {{ currentTimezone }}.</small>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="categoriaId">Categoría</label>
+                            <label class="form-label" for="categoriaId">Categoria</label>
                             <select id="categoriaId" class="form-control" formControlName="categoriaId">
-                                <option [ngValue]="null">Sin categoría</option>
+                                <option [ngValue]="null">Sin categoria</option>
                                 @for (cat of categorias(); track cat.id) {
                                     <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-card">
+                    <div class="form-card__header">
+                        <h2>Recordatorio</h2>
+                        <p>Configura cuando quieres recibir un aviso por email antes del vencimiento.</p>
+                    </div>
+
+                    <div class="reminder-row">
+                        <label class="toggle-card" [class.toggle-card--active]="form.controls.recordatorioActivo.value">
+                            <span>
+                                <strong>Activar recordatorio</strong>
+                                <small>Disponible cuando la tarea tiene fecha y hora.</small>
+                            </span>
+
+                            <input
+                                    type="checkbox"
+                                    class="sr-only"
+                                    formControlName="recordatorioActivo"
+                                    [disabled]="!form.controls.fechaLimite.value"
+                            />
+                            <span class="toggle-card__switch"></span>
+                        </label>
+
+                        <div class="form-group form-group--reminder">
+                            <label class="form-label" for="recordatorioMinutosAntes">Enviar aviso</label>
+                            <select
+                                    id="recordatorioMinutosAntes"
+                                    class="form-control"
+                                    formControlName="recordatorioMinutosAntes"
+                                    [disabled]="!form.controls.recordatorioActivo.value"
+                            >
+                                @for (option of reminderOptions; track option.value) {
+                                    <option [ngValue]="option.value">{{ option.label }}</option>
                                 }
                             </select>
                         </div>
@@ -153,9 +192,9 @@
             <aside class="task-preview">
                 <section class="preview-card">
                     <span class="preview-card__eyebrow">Vista previa</span>
-                    <h2>{{ f('titulo').value || 'Tu próxima tarea' }}</h2>
+                    <h2>{{ f('titulo').value || 'Tu proxima tarea' }}</h2>
                     <p>
-                        {{ f('descripcion').value || 'Añade una descripción breve para que el contexto de la tarea quede claro para ti o para tu equipo.' }}
+                        {{ f('descripcion').value || 'Anade una descripcion breve para que el contexto de la tarea quede claro para ti o para tu equipo.' }}
                     </p>
 
                     <div class="preview-card__meta">
@@ -165,17 +204,22 @@
                     </div>
 
                     <div class="preview-card__detail">
-                        <span class="preview-card__label">Fecha límite</span>
+                        <span class="preview-card__label">Fecha limite</span>
                         <strong>{{ formattedDeadline() }}</strong>
+                    </div>
+
+                    <div class="preview-card__detail">
+                        <span class="preview-card__label">Recordatorio</span>
+                        <strong>{{ selectedReminderLabel() }}</strong>
                     </div>
                 </section>
 
                 <section class="preview-card preview-card--tips">
-                    <span class="preview-card__eyebrow">Buenas prácticas</span>
+                    <span class="preview-card__eyebrow">Buenas practicas</span>
                     <ul class="preview-list">
-                        <li>Escribe títulos concretos y accionables.</li>
-                        <li>Usa prioridad alta sólo cuando realmente afecte al flujo.</li>
-                        <li>Añade fecha límite si la tarea depende de calendario real.</li>
+                        <li>Escribe titulos concretos y accionables.</li>
+                        <li>Usa prioridad alta solo cuando realmente afecte al flujo.</li>
+                        <li>Anade fecha y hora si la tarea depende de un momento real.</li>
                     </ul>
                 </section>
             </aside>

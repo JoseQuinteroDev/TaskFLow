@@ -4,6 +4,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { TareaFiltros, EstadoTarea, PrioridadTarea } from '../../../core/models/tarea.model';
 import { CategoriaResponse } from '../../../core/models/categoria.model';
+import { TimezoneService } from '../../../core/services/timezone.service';
 
 @Component({
   selector: 'app-tarea-filtros',
@@ -14,6 +15,7 @@ import { CategoriaResponse } from '../../../core/models/categoria.model';
 })
 export class TareaFiltrosComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private timezoneService = inject(TimezoneService);
 
   @Input() categorias: CategoriaResponse[] = [];
   @Output() filtrosChange = new EventEmitter<TareaFiltros>();
@@ -62,8 +64,8 @@ export class TareaFiltrosComponent implements OnInit {
     if (v.estado) filtros.estado = v.estado as EstadoTarea;
     if (v.prioridad) filtros.prioridad = v.prioridad as PrioridadTarea;
     if (v.categoriaId) filtros.categoriaId = +v.categoriaId;
-    if (v.desde) filtros.desde = v.desde;
-    if (v.hasta) filtros.hasta = v.hasta;
+    if (v.desde) filtros.desde = this.timezoneService.toUtcIso(v.desde);
+    if (v.hasta) filtros.hasta = this.timezoneService.toUtcIso(v.hasta);
 
     this.filtrosChange.emit(filtros);
   }

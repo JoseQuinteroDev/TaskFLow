@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { TimezoneService } from './timezone.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,17 +21,24 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private timezoneService: TimezoneService
   ) {}
 
-  login(payload: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, payload).pipe(
+  login(payload: Omit<LoginRequest, 'timezone'>): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
+      ...payload,
+      timezone: this.timezoneService.detect()
+    }).pipe(
       tap(response => this.setSession(response))
     );
   }
 
-  register(payload: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, payload).pipe(
+  register(payload: Omit<RegisterRequest, 'timezone'>): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, {
+      ...payload,
+      timezone: this.timezoneService.detect()
+    }).pipe(
       tap(response => this.setSession(response))
     );
   }
@@ -48,14 +56,16 @@ export class AuthService {
     return this.authState()?.token ?? null;
   }
 
-  currentUser(): { email: string; roles: string[] } | null {
+  currentUser(): { nombre: string; email: string; timezone: string; roles: string[] } | null {
     const auth = this.authState();
     if (!auth) {
       return null;
     }
 
     return {
+      nombre: auth.nombre,
       email: auth.email,
+      timezone: auth.timezone,
       roles: auth.roles
     };
   }

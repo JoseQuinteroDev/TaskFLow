@@ -57,7 +57,8 @@ class RecordatorioTareaServiceTest {
         reminderProperties.setOverdueWindow(Duration.ofMinutes(20));
 
         TareaTemporalService tareaTemporalService = new TareaTemporalService(
-                Clock.fixed(Instant.parse("2026-04-02T10:00:00Z"), ZoneId.of("Europe/Madrid"))
+                Clock.fixed(Instant.parse("2026-04-02T10:00:00Z"), ZoneId.of("Europe/Madrid")),
+                "Europe/Madrid"
         );
 
         service = new RecordatorioTareaService(
@@ -71,12 +72,12 @@ class RecordatorioTareaServiceTest {
 
     @Test
     void sendsDueSoonReminderAndPersistsIt() {
-        Tarea tarea = buildTask(LocalDateTime.of(2026, 4, 3, 9, 30));
+        Tarea tarea = buildTask(Instant.parse("2026-04-02T10:10:00Z"), 15);
 
-        when(tareaRepository.findByEstadoNotAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+        when(tareaRepository.findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
                 eq(EstadoTarea.COMPLETADA),
-                any(LocalDateTime.class),
-                any(LocalDateTime.class)
+                any(Instant.class),
+                any(Instant.class)
         )).thenReturn(List.of(tarea), List.of());
         when(recordatorioTareaRepository.findByTareaIdAndTipoAndCanal(
                 tarea.getId(),
@@ -99,7 +100,7 @@ class RecordatorioTareaServiceTest {
 
     @Test
     void doesNotResendReminderAlreadyMarkedAsSent() {
-        Tarea tarea = buildTask(LocalDateTime.of(2026, 4, 3, 9, 30));
+        Tarea tarea = buildTask(Instant.parse("2026-04-02T10:10:00Z"), 15);
         RecordatorioTarea existingReminder = RecordatorioTarea.builder()
                 .id(20L)
                 .tarea(tarea)
@@ -110,10 +111,10 @@ class RecordatorioTareaServiceTest {
                 .fechaProgramada(LocalDateTime.of(2026, 4, 2, 12, 0))
                 .build();
 
-        when(tareaRepository.findByEstadoNotAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+        when(tareaRepository.findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
                 eq(EstadoTarea.COMPLETADA),
-                any(LocalDateTime.class),
-                any(LocalDateTime.class)
+                any(Instant.class),
+                any(Instant.class)
         )).thenReturn(List.of(tarea), List.of());
         when(recordatorioTareaRepository.findByTareaIdAndTipoAndCanal(
                 tarea.getId(),
@@ -127,10 +128,12 @@ class RecordatorioTareaServiceTest {
         verify(recordatorioTareaRepository, never()).save(any());
     }
 
-    private Tarea buildTask(LocalDateTime fechaLimite) {
+    private Tarea buildTask(Instant fechaLimite, int recordatorioMinutosAntes) {
         Usuario usuario = Usuario.builder()
                 .id(7L)
+                .nombre("Jose")
                 .email("user@taskflow.dev")
+                .timezone("Europe/Madrid")
                 .activo(true)
                 .build();
 
@@ -140,6 +143,8 @@ class RecordatorioTareaServiceTest {
                 .prioridad(PrioridadTarea.ALTA)
                 .estado(EstadoTarea.PENDIENTE)
                 .fechaLimite(fechaLimite)
+                .recordatorioActivo(true)
+                .recordatorioMinutosAntes(recordatorioMinutosAntes)
                 .usuario(usuario)
                 .build();
     }

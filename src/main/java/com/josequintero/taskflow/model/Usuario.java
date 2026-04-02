@@ -1,8 +1,26 @@
 package com.josequintero.taskflow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,6 +44,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,6 +54,9 @@ public class Usuario {
 
     @Column(name = "email", nullable = false, length = 120)
     private String email;
+
+    @Column(name = "timezone", nullable = false, length = 60)
+    private String timezone;
 
     @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
@@ -65,14 +87,14 @@ public class Usuario {
     private List<Categoria> categorias = new ArrayList<>();
 
     @PrePersist
-    public void prePersist()
-    {
-        if (activo == null)
-        {
+    public void prePersist() {
+        if (activo == null) {
             activo = true;
         }
-        if (fechaCreacion == null)
-        {
+        if (timezone == null || timezone.isBlank()) {
+            timezone = "Europe/Madrid";
+        }
+        if (fechaCreacion == null) {
             fechaCreacion = LocalDateTime.now();
         }
     }

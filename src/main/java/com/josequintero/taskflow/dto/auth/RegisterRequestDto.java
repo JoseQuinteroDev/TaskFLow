@@ -22,14 +22,17 @@ public class RegisterRequestDto {
     private String nombre;
 
     @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email no tiene un formato válido")
+    @Email(message = "El email no tiene un formato valido")
     private String email;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, max = 100, message = "La contraseña debe tener entre 8 y 100 caracteres")
+    @NotBlank(message = "La contrasena es obligatoria")
+    @Size(min = 8, max = 100, message = "La contrasena debe tener entre 8 y 100 caracteres")
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*\\d).{8,100}$",
-            message = "La contraseña debe incluir al menos una mayúscula y un número"
+            message = "La contrasena debe incluir al menos una mayuscula y un numero"
     )
     private String password;
+
+    @Size(max = 60, message = "La zona horaria no puede superar los 60 caracteres")
+    private String timezone;
 }

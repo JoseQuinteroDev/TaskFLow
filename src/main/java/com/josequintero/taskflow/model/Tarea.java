@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -60,7 +61,13 @@ public class Tarea {
     private PrioridadTarea prioridad;
 
     @Column(name = "fecha_limite")
-    private LocalDateTime fechaLimite;
+    private Instant fechaLimite;
+
+    @Column(name = "recordatorio_activo", nullable = false)
+    private Boolean recordatorioActivo;
+
+    @Column(name = "recordatorio_minutos_antes")
+    private Integer recordatorioMinutosAntes;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
@@ -84,6 +91,9 @@ public class Tarea {
         if (prioridad == null) {
             prioridad = PrioridadTarea.MEDIA;
         }
+        if (recordatorioActivo == null) {
+            recordatorioActivo = false;
+        }
         if (fechaCreacion == null) {
             fechaCreacion = LocalDateTime.now();
         }
@@ -101,7 +111,11 @@ public class Tarea {
         return estado == EstadoTarea.COMPLETADA;
     }
 
-    public boolean estaVencida(LocalDateTime referencia) {
+    public boolean tieneRecordatorioActivo() {
+        return Boolean.TRUE.equals(recordatorioActivo) && recordatorioMinutosAntes != null;
+    }
+
+    public boolean estaVencida(Instant referencia) {
         return fechaLimite != null
                 && referencia != null
                 && fechaLimite.isBefore(referencia)

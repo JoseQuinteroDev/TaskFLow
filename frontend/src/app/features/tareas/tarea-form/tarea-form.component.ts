@@ -5,9 +5,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { TareaService } from '../../../core/services/tarea.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { TimezoneService } from '../../../core/services/timezone.service';
 
 import { CategoriaResponse } from '../../../core/models/categoria.model';
-import { EstadoTarea, PrioridadTarea, TareaResponse } from '../../../core/models/tarea.model';
+import {
+  EstadoTarea,
+  PrioridadTarea,
+  RECORDATORIO_OPTIONS,
+  TareaResponse
+} from '../../../core/models/tarea.model';
 
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
@@ -25,13 +31,15 @@ export class TareaFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
+  private timezoneService = inject(TimezoneService);
 
   loading = signal(false);
   loadingData = signal(false);
   categorias = signal<CategoriaResponse[]>([]);
   tareaId = signal<number | null>(null);
 
-  readonly today = new Date().toISOString().split('T')[0];
+  readonly currentTimezone = this.timezoneService.detect();
+  readonly minDateTime = this.timezoneService.localNowInputValue();
   readonly isEditing = () => !!this.tareaId();
 
   prioridades: { value: PrioridadTarea; label: string }[] = [
@@ -46,6 +54,8 @@ export class TareaFormComponent implements OnInit {
     { value: 'COMPLETADA', label: 'Completada' }
   ];
 
+  reminderOptions = RECORDATORIO_OPTIONS;
+
   form = this.fb.group({
     titulo: this.fb.nonNullable.control('', [
       Validators.required,
@@ -56,11 +66,30 @@ export class TareaFormComponent implements OnInit {
     prioridad: this.fb.nonNullable.control<PrioridadTarea>('MEDIA', Validators.required),
     estado: this.fb.nonNullable.control<EstadoTarea>('PENDIENTE'),
     fechaLimite: this.fb.nonNullable.control(''),
-    categoriaId: this.fb.control<number | null>(null)
+    categoriaId: this.fb.control<number | null>(null),
+    recordatorioActivo: this.fb.nonNullable.control(false),
+    recordatorioMinutosAntes: this.fb.control<number | null>(60)
   });
 
   ngOnInit(): void {
     this.categoriaService.getAll().subscribe(categorias => this.categorias.set(categorias));
+
+    this.form.controls.recordatorioActivo.valueChanges.subscribe(active => {
+      if (!active) {
+        this.form.controls.recordatorioMinutosAntes.setValue(null);
+        return;
+      }
+
+      if (!this.form.controls.recordatorioMinutosAntes.value) {
+        this.form.controls.recordatorioMinutosAntes.setValue(60);
+      }
+    });
+
+    this.form.controls.fechaLimite.valueChanges.subscribe(value => {
+      if (!value && this.form.controls.recordatorioActivo.value) {
+        this.form.controls.recordatorioActivo.setValue(false);
+      }
+    });
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -91,20 +120,32 @@ export class TareaFormComponent implements OnInit {
 
   selectedCategoryLabel(): string {
     const categoryId = this.f('categoriaId').value;
-    return this.categorias().find(item => item.id === categoryId)?.nombre ?? 'Sin categoría';
+    return this.categorias().find(item => item.id === categoryId)?.nombre ?? 'Sin categoria';
+  }
+
+  selectedReminderLabel(): string {
+    if (!this.form.controls.recordatorioActivo.value) {
+      return 'Sin recordatorio';
+    }
+
+    const value = this.form.controls.recordatorioMinutosAntes.value;
+    return this.reminderOptions.find(option => option.value === value)?.label ?? 'Recordatorio activo';
   }
 
   formattedDeadline(): string {
-    const value = this.f('fechaLimite').value;
+    const value = this.form.controls.fechaLimite.value;
     if (!value) {
-      return 'Sin fecha límite';
+      return 'Sin fecha limite';
     }
 
-    return new Intl.DateTimeFormat('es-ES', {
+    const utcValue = this.timezoneService.toUtcIso(value);
+    return this.timezoneService.format(utcValue, {
       day: 'numeric',
       month: 'long',
-      year: 'numeric'
-    }).format(new Date(`${value}T00:00:00`));
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   loadTarea(id: number): void {
@@ -117,8 +158,10 @@ export class TareaFormComponent implements OnInit {
           descripcion: tarea.descripcion ?? '',
           prioridad: tarea.prioridad,
           estado: tarea.estado,
-          fechaLimite: tarea.fechaLimite ? tarea.fechaLimite.split('T')[0] : '',
-          categoriaId: tarea.categoria?.id ?? null
+          fechaLimite: this.timezoneService.fromUtcIsoToLocalInput(tarea.fechaLimite),
+          categoriaId: tarea.categoria?.id ?? null,
+          recordatorioActivo: tarea.recordatorioActivo,
+          recordatorioMinutosAntes: tarea.recordatorioMinutosAntes ?? 60
         });
         this.loadingData.set(false);
       },
@@ -137,14 +180,18 @@ export class TareaFormComponent implements OnInit {
 
     this.loading.set(true);
     const value = this.form.getRawValue();
+    const fechaLimiteUtc = this.timezoneService.toUtcIso(value.fechaLimite);
+    const recordatorioActivo = !!value.recordatorioActivo && !!fechaLimiteUtc;
 
     const payload = {
       titulo: value.titulo,
       descripcion: value.descripcion || undefined,
       prioridad: value.prioridad,
       estado: value.estado,
-      fechaLimite: value.fechaLimite || undefined,
-      categoriaId: value.categoriaId ? +value.categoriaId : undefined
+      fechaLimite: fechaLimiteUtc,
+      categoriaId: value.categoriaId ? +value.categoriaId : undefined,
+      recordatorioActivo,
+      recordatorioMinutosAntes: recordatorioActivo ? value.recordatorioMinutosAntes ?? 60 : undefined
     };
 
     const request = this.isEditing()
@@ -154,7 +201,9 @@ export class TareaFormComponent implements OnInit {
           descripcion: payload.descripcion,
           prioridad: payload.prioridad,
           fechaLimite: payload.fechaLimite,
-          categoriaId: payload.categoriaId
+          categoriaId: payload.categoriaId,
+          recordatorioActivo: payload.recordatorioActivo,
+          recordatorioMinutosAntes: payload.recordatorioMinutosAntes
         });
 
     request.subscribe({

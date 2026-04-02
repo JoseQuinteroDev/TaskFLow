@@ -66,21 +66,21 @@ export class DashboardComponent {
     }
 
     if (resumen.vencidas > 0) {
-      return 'Hay tareas vencidas que necesitan atención';
+      return 'Hay tareas vencidas que necesitan atencion';
     }
 
     if (resumen.pendientes > 0) {
-      return 'Tu bandeja está bajo control';
+      return 'Tu bandeja esta bajo control';
     }
 
-    return 'Todo el trabajo del día está en orden';
+    return 'Todo el trabajo del dia esta en orden';
   });
 
   readonly focusText = computed(() => {
     const resumen = this.resumen();
 
     if (!resumen?.total) {
-      return 'Crea una tarea, asígnale prioridad y empieza a construir tu ritmo de trabajo.';
+      return 'Crea una tarea, asignale prioridad y empieza a construir tu ritmo de trabajo.';
     }
 
     if (resumen.vencidas > 0) {
@@ -91,7 +91,7 @@ export class DashboardComponent {
       return `Quedan ${resumen.pendientes} tarea${resumen.pendientes > 1 ? 's' : ''} pendientes. Buen momento para avanzar.`;
     }
 
-    return 'Buen cierre: todas las tareas activas están resueltas o en buen estado.';
+    return 'Buen cierre: todas las tareas activas estan resueltas o en buen estado.';
   });
 
   constructor(
@@ -106,15 +106,18 @@ export class DashboardComponent {
 
   greeting(): string {
     const hour = new Date().getHours();
-    if (hour < 13) return 'Buenos días';
+    if (hour < 13) return 'Buenos dias';
     if (hour < 20) return 'Buenas tardes';
     return 'Buenas noches';
   }
 
   firstName(): string {
-    const email = this.authService.currentUser()?.email ?? '';
-    const baseName = email.split('@')[0] || 'equipo';
-    return baseName.charAt(0).toUpperCase() + baseName.slice(1);
+    const nombre = this.authService.currentUser()?.nombre?.trim();
+    if (!nombre) {
+      return 'equipo';
+    }
+
+    return nombre.split(/\s+/)[0];
   }
 
   loadData(): void {
@@ -151,7 +154,7 @@ export class DashboardComponent {
           {
             label: 'Vencidas',
             value: resumen.vencidas,
-            hint: 'Necesitan reacción',
+            hint: 'Necesitan reaccion',
             color: 'red',
             icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
           }
