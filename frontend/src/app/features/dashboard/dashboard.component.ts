@@ -114,7 +114,7 @@ export class DashboardComponent {
   firstName(): string {
     const nombre = this.authService.currentUser()?.nombre?.trim();
     if (!nombre) {
-      return 'equipo';
+      return 'Usuario';
     }
 
     return nombre.split(/\s+/)[0];

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 interface NavItem {
@@ -17,6 +17,7 @@ interface NavItem {
 })
 export class MainLayoutComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   sidebarCollapsed = signal(false);
   mobileMenuOpen = signal(false);
@@ -27,7 +28,7 @@ export class MainLayoutComponent {
   readonly userInitial = () => (this.userName().trim().charAt(0) || 'U').toUpperCase();
   readonly userRoleLabel = () => (this.isAdmin() ? 'Administrador' : 'Miembro del workspace');
 
-  navItems: NavItem[] = [
+  workspaceNavItems: NavItem[] = [
     {
       path: '/dashboard',
       label: 'Dashboard',
@@ -44,6 +45,18 @@ export class MainLayoutComponent {
       icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.41 20.6a2 2 0 0 1-2.82 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>`
     }
   ];
+
+  adminNavItems: NavItem[] = [
+    {
+      path: '/admin',
+      label: 'Administracion',
+      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`
+    }
+  ];
+
+  isInAdminArea(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(value => !value);

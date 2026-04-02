@@ -66,7 +66,7 @@
             }
 
             <nav class="sidebar__nav">
-                @for (item of navItems; track item.path) {
+                @for (item of workspaceNavItems; track item.path) {
                     <a
                             [routerLink]="item.path"
                             routerLinkActive="active"
@@ -82,6 +82,29 @@
                     </a>
                 }
             </nav>
+
+            @if (isAdmin()) {
+                @if (!sidebarCollapsed()) {
+                    <p class="sidebar__eyebrow">Admin zone</p>
+                }
+
+                <nav class="sidebar__nav">
+                    @for (item of adminNavItems; track item.path) {
+                        <a
+                                [routerLink]="item.path"
+                                routerLinkActive="active"
+                                class="nav-item nav-item--admin"
+                                [title]="sidebarCollapsed() ? item.label : ''"
+                                (click)="closeMobileMenu()"
+                        >
+                            <span class="nav-item__icon" [innerHTML]="item.icon"></span>
+                            @if (!sidebarCollapsed()) {
+                                <span class="nav-item__label">{{ item.label }}</span>
+                            }
+                        </a>
+                    }
+                </nav>
+            }
         </div>
 
         <div class="sidebar__footer">
@@ -143,12 +166,18 @@
                 </button>
 
                 <div>
-                    <span class="shell__eyebrow">Premium workspace</span>
-                    <strong class="shell__title">Organiza tu trabajo con claridad</strong>
+                    <span class="shell__eyebrow">{{ isInAdminArea() ? 'Administration workspace' : 'Premium workspace' }}</span>
+                    <strong class="shell__title">
+                        {{ isInAdminArea() ? 'Gestiona usuarios, accesos y operacion' : 'Organiza tu trabajo con claridad' }}
+                    </strong>
                 </div>
             </div>
 
             <div class="shell__topbar-user">
+                @if (isAdmin()) {
+                    <div class="shell__admin-pill">Admin</div>
+                }
+
                 <div class="shell__user-pill">
                     <span class="status-dot"></span>
                     <span>{{ userName() }}</span>

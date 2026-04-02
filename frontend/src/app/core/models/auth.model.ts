@@ -19,3 +19,10 @@ export interface AuthResponse {
     timezone: string;
     roles: string[];
 }
+
+export interface CurrentUserResponse {
+    nombre: string;
+    email: string;
+    timezone: string;
+    roles: string[];
+}
