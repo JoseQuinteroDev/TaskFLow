@@ -1,52 +1,79 @@
 <div class="page-wrapper">
-    <div class="page-header">
-        <div>
+    <section class="dashboard-hero card">
+        <div class="dashboard-hero__copy">
+            <span class="page-header__eyebrow">Resumen del día</span>
             <h1 class="page-header__title">{{ greeting() }}, {{ firstName() }}</h1>
-            <p class="page-header__subtitle">{{ today }}</p>
+            <p class="page-header__subtitle">
+                Hoy es {{ today }}. Mantén el contexto visible y actúa sólo en lo que de verdad mueve el trabajo.
+            </p>
+
+            <div class="dashboard-hero__actions">
+                <a routerLink="/tareas/nueva" class="btn btn-primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Nueva tarea
+                </a>
+                <a routerLink="/tareas" class="btn btn-secondary">Ver backlog</a>
+            </div>
         </div>
 
-        <a routerLink="/tareas/nueva" class="btn btn-primary">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Nueva tarea
-        </a>
-    </div>
+        <div class="dashboard-focus card-muted">
+            <span class="dashboard-focus__eyebrow">En foco</span>
+            <strong>{{ focusTitle() }}</strong>
+            <p>{{ focusText() }}</p>
+
+            <div class="dashboard-progress">
+                <div class="dashboard-progress__track">
+                    <span class="dashboard-progress__fill" [style.--progress-width]="progressWidth()"></span>
+                </div>
+                <span class="dashboard-progress__meta">{{ completionRate() }}% completado</span>
+            </div>
+        </div>
+    </section>
 
     @if (loading()) {
         <div class="grid-stats">
             @for (i of [1,2,3,4]; track i) {
-                <div class="skeleton" style="height:110px"></div>
+                <div class="skeleton skeleton--stat"></div>
             }
         </div>
     } @else {
         <div class="grid-stats stagger-children">
             @for (card of statCards(); track card.label) {
-                <div class="stat-card stat-card--{{ card.color }}">
+                <article class="stat-card stat-card--{{ card.color }}">
                     <div class="stat-card__header">
-                        <span class="stat-card__label">{{ card.label }}</span>
+                        <div>
+                            <span class="stat-card__label">{{ card.label }}</span>
+                            <strong class="stat-card__value mono">{{ card.value }}</strong>
+                        </div>
                         <span class="stat-card__icon" [innerHTML]="card.icon"></span>
                     </div>
-                    <div class="stat-card__value mono">{{ card.value }}</div>
-                </div>
+                    <p class="stat-card__hint">{{ card.hint }}</p>
+                </article>
             }
         </div>
     }
 
     <div class="section-header">
-        <h2 class="section-title">Tareas recientes</h2>
-        <a routerLink="/tareas" class="btn btn-ghost btn-sm">Ver todas →</a>
+        <div>
+            <h2 class="section-title">Tareas recientes</h2>
+            <p class="section-subtitle">Lo último en lo que estás trabajando ahora mismo.</p>
+        </div>
+        <a routerLink="/tareas" class="btn btn-ghost btn-sm">Ver todas</a>
     </div>
 
     @if (loading()) {
-        <app-loading [fullPage]="false" message="Cargando tareas..." />
+        <div class="loading-panel">
+            <app-loading [fullPage]="false" message="Cargando tareas..." />
+        </div>
     } @else if (recentTareas().length === 0) {
         <app-empty-state
-                title="Sin tareas todavía"
-                description="Crea tu primera tarea para empezar a organizarte"
+                title="Aún no tienes tareas"
+                description="Crea la primera para empezar a construir un flujo de trabajo claro."
         >
-            <a routerLink="/tareas/nueva" class="btn btn-primary btn-sm" style="margin-top:8px">Crear tarea</a>
+            <a routerLink="/tareas/nueva" class="btn btn-primary btn-sm">Crear tarea</a>
         </app-empty-state>
     } @else {
         <div class="tareas-grid stagger-children">
@@ -60,48 +87,61 @@
         </div>
     }
 
-    <div class="quick-actions">
-        <h2 class="section-title" style="margin-bottom:16px">Acciones rápidas</h2>
-
-        <div class="quick-grid">
-            <a routerLink="/tareas/nueva" class="quick-item">
-        <span class="quick-item__icon quick-item__icon--accent">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </span>
-                <span class="quick-item__text">
-          <strong>Nueva tarea</strong>
-          <span>Añade algo a tu lista</span>
-        </span>
-            </a>
-
-            <a routerLink="/tareas" [queryParams]="{ estado: 'PENDIENTE' }" class="quick-item">
-        <span class="quick-item__icon quick-item__icon--amber">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-        </span>
-                <span class="quick-item__text">
-          <strong>Pendientes</strong>
-          <span>{{ resumen()?.pendientes ?? 0 }} tareas esperando</span>
-        </span>
-            </a>
-
-            <a routerLink="/categorias" class="quick-item">
-        <span class="quick-item__icon quick-item__icon--blue">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-            <line x1="7" y1="7" x2="7.01" y2="7"/>
-          </svg>
-        </span>
-                <span class="quick-item__text">
-          <strong>Categorías</strong>
-          <span>Organiza por temas</span>
-        </span>
-            </a>
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Acciones rápidas</h2>
+            <p class="section-subtitle">Atajos para seguir avanzando sin perder el ritmo.</p>
         </div>
     </div>
+
+    <div class="quick-grid">
+        <a routerLink="/tareas/nueva" class="quick-item">
+            <span class="quick-item__icon quick-item__icon--accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </span>
+            <span class="quick-item__text">
+                <strong>Nueva tarea</strong>
+                <span>Empieza algo importante ahora.</span>
+            </span>
+        </a>
+
+        <a routerLink="/tareas" [queryParams]="{ estado: 'PENDIENTE' }" class="quick-item">
+            <span class="quick-item__icon quick-item__icon--amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </span>
+            <span class="quick-item__text">
+                <strong>Revisar pendientes</strong>
+                <span>{{ resumen()?.pendientes ?? 0 }} tareas por resolver.</span>
+            </span>
+        </a>
+
+        <a routerLink="/categorias" class="quick-item">
+            <span class="quick-item__icon quick-item__icon--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+            </span>
+            <span class="quick-item__text">
+                <strong>Gestionar categorías</strong>
+                <span>Ordena el trabajo por áreas o contextos.</span>
+            </span>
+        </a>
+    </div>
 </div>
+
+@if (deleteId()) {
+    <app-confirm-dialog
+            title="Eliminar tarea"
+            message="Esta acción borrará la tarea seleccionada. No se puede deshacer."
+            confirmLabel="Sí, eliminar"
+            (confirmed)="confirmDelete()"
+            (cancelled)="deleteId.set(null)"
+    />
+}

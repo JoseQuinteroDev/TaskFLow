@@ -1,19 +1,19 @@
 <div class="filtros-panel">
-    <div class="search-wrapper">
-        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <div class="search-shell">
+        <svg class="search-shell__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
 
         <input
                 type="text"
-                class="form-control search-input"
-                placeholder="Buscar tareas..."
+                class="form-control search-shell__input"
+                placeholder="Buscar por título o descripción"
                 [formControl]="form.controls.texto"
         />
 
         @if (form.controls.texto.value) {
-            <button class="search-clear" (click)="form.controls.texto.setValue('')">
+            <button class="search-shell__clear" type="button" (click)="form.controls.texto.setValue('')">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -23,14 +23,14 @@
     </div>
 
     <div class="filters-row" [formGroup]="form">
-        <select class="form-control-select" formControlName="estado">
+        <select class="form-control" formControlName="estado">
             <option value="">Todos los estados</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="EN_PROCESO">En proceso</option>
             <option value="COMPLETADA">Completada</option>
         </select>
 
-        <select class="form-control-select" formControlName="prioridad">
+        <select class="form-control" formControlName="prioridad">
             <option value="">Todas las prioridades</option>
             <option value="ALTA">Alta</option>
             <option value="MEDIA">Media</option>
@@ -38,7 +38,7 @@
         </select>
 
         @if (categorias.length > 0) {
-            <select class="form-control-select" formControlName="categoriaId">
+            <select class="form-control" formControlName="categoriaId">
                 <option value="">Todas las categorías</option>
                 @for (cat of categorias; track cat.id) {
                     <option [value]="cat.id">{{ cat.nombre }}</option>
@@ -46,16 +46,12 @@
             </select>
         }
 
-        <input type="date" class="form-control-select" formControlName="desde" title="Desde fecha" />
-        <input type="date" class="form-control-select" formControlName="hasta" title="Hasta fecha" />
+        <input type="date" class="form-control" formControlName="desde" title="Desde fecha" />
+        <input type="date" class="form-control" formControlName="hasta" title="Hasta fecha" />
 
         @if (hasActiveFilters()) {
-            <button class="btn btn-ghost btn-sm" (click)="clearFilters()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-                Limpiar
+            <button class="btn btn-ghost btn-sm filtros-panel__clear" type="button" (click)="clearFilters()">
+                Limpiar filtros
             </button>
         }
     </div>

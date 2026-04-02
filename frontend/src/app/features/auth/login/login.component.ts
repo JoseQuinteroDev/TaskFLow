@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -11,7 +11,7 @@ import { ToastService } from '../../../core/services/toast.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -21,7 +21,7 @@ export class LoginComponent {
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
+    password: ['', Validators.required]
   });
 
   loading = signal(false);
@@ -30,12 +30,12 @@ export class LoginComponent {
 
   features = [
     { text: 'Organiza tareas por prioridad y categoría' },
-    { text: 'Seguimiento de progreso en tiempo real' },
-    { text: 'Filtros avanzados para encontrar todo' },
+    { text: 'Haz seguimiento de progreso sin perder contexto' },
+    { text: 'Encuentra lo importante con filtros claros y rápidos' }
   ];
 
   togglePassword(): void {
-    this.showPassword.update(v => !v);
+    this.showPassword.update(value => !value);
   }
 
   onSubmit(): void {
@@ -49,15 +49,15 @@ export class LoginComponent {
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
-        this.toast.success('¡Bienvenido!', 'Sesión iniciada correctamente');
+        this.toast.success('Bienvenido', 'Tu sesión se ha iniciado correctamente');
         this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.errorMsg.set(
           err.status === 401
-            ? 'Email o contraseña incorrectos'
-            : 'Error al iniciar sesión. Inténtalo de nuevo.'
+            ? 'El email o la contraseña no coinciden.'
+            : 'No hemos podido iniciar sesión. Inténtalo de nuevo.'
         );
       }
     });

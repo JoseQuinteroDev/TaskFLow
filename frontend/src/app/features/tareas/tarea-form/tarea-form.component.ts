@@ -1,13 +1,13 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { TareaService } from '../../../core/services/tarea.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { TareaService } from '../../../core/services/tarea.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 import { CategoriaResponse } from '../../../core/models/categoria.model';
-import { PrioridadTarea, EstadoTarea, TareaResponse } from '../../../core/models/tarea.model';
+import { EstadoTarea, PrioridadTarea, TareaResponse } from '../../../core/models/tarea.model';
 
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
@@ -16,7 +16,7 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, LoadingComponent],
   templateUrl: './tarea-form.component.html',
-  styleUrls: ['./tarea-form.component.scss']
+  styleUrl: './tarea-form.component.scss'
 })
 export class TareaFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -37,20 +37,30 @@ export class TareaFormComponent implements OnInit {
   prioridades: { value: PrioridadTarea; label: string }[] = [
     { value: 'ALTA', label: 'Alta' },
     { value: 'MEDIA', label: 'Media' },
-    { value: 'BAJA', label: 'Baja' },
+    { value: 'BAJA', label: 'Baja' }
   ];
 
-  form = this.fb.nonNullable.group({
-    titulo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-    descripcion: ['', Validators.maxLength(500)],
-    prioridad: ['MEDIA' as PrioridadTarea, Validators.required],
-    estado: ['PENDIENTE' as EstadoTarea],
-    fechaLimite: [''],
-    categoriaId: [null as number | null],
+  estados: { value: EstadoTarea; label: string }[] = [
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'EN_PROCESO', label: 'En proceso' },
+    { value: 'COMPLETADA', label: 'Completada' }
+  ];
+
+  form = this.fb.group({
+    titulo: this.fb.nonNullable.control('', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(100)
+    ]),
+    descripcion: this.fb.nonNullable.control('', Validators.maxLength(500)),
+    prioridad: this.fb.nonNullable.control<PrioridadTarea>('MEDIA', Validators.required),
+    estado: this.fb.nonNullable.control<EstadoTarea>('PENDIENTE'),
+    fechaLimite: this.fb.nonNullable.control(''),
+    categoriaId: this.fb.control<number | null>(null)
   });
 
   ngOnInit(): void {
-    this.categoriaService.getAll().subscribe(c => this.categorias.set(c));
+    this.categoriaService.getAll().subscribe(categorias => this.categorias.set(categorias));
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -63,23 +73,57 @@ export class TareaFormComponent implements OnInit {
     return this.form.get(name)!;
   }
 
+  titleLength(): number {
+    return this.f('titulo').value?.length ?? 0;
+  }
+
+  descriptionLength(): number {
+    return this.f('descripcion').value?.length ?? 0;
+  }
+
+  selectedPriorityLabel(): string {
+    return this.prioridades.find(item => item.value === this.f('prioridad').value)?.label ?? 'Media';
+  }
+
+  selectedEstadoLabel(): string {
+    return this.estados.find(item => item.value === this.f('estado').value)?.label ?? 'Pendiente';
+  }
+
+  selectedCategoryLabel(): string {
+    const categoryId = this.f('categoriaId').value;
+    return this.categorias().find(item => item.id === categoryId)?.nombre ?? 'Sin categoría';
+  }
+
+  formattedDeadline(): string {
+    const value = this.f('fechaLimite').value;
+    if (!value) {
+      return 'Sin fecha límite';
+    }
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(`${value}T00:00:00`));
+  }
+
   loadTarea(id: number): void {
     this.loadingData.set(true);
 
     this.tareaService.getById(id).subscribe({
-      next: (t: TareaResponse) => {
+      next: (tarea: TareaResponse) => {
         this.form.patchValue({
-          titulo: t.titulo,
-          descripcion: t.descripcion ?? '',
-          prioridad: t.prioridad,
-          estado: t.estado,
-          fechaLimite: t.fechaLimite ? t.fechaLimite.split('T')[0] : '',
-          categoriaId: t.categoria?.id ?? null,
+          titulo: tarea.titulo,
+          descripcion: tarea.descripcion ?? '',
+          prioridad: tarea.prioridad,
+          estado: tarea.estado,
+          fechaLimite: tarea.fechaLimite ? tarea.fechaLimite.split('T')[0] : '',
+          categoriaId: tarea.categoria?.id ?? null
         });
         this.loadingData.set(false);
       },
       error: () => {
-        this.toast.error('Tarea no encontrada');
+        this.toast.error('Error', 'No hemos encontrado la tarea solicitada.');
         this.router.navigate(['/tareas']);
       }
     });
@@ -92,18 +136,18 @@ export class TareaFormComponent implements OnInit {
     }
 
     this.loading.set(true);
-    const val = this.form.getRawValue();
+    const value = this.form.getRawValue();
 
     const payload = {
-      titulo: val.titulo,
-      descripcion: val.descripcion || undefined,
-      prioridad: val.prioridad,
-      estado: val.estado,
-      fechaLimite: val.fechaLimite || undefined,
-      categoriaId: val.categoriaId ? +val.categoriaId : undefined,
+      titulo: value.titulo,
+      descripcion: value.descripcion || undefined,
+      prioridad: value.prioridad,
+      estado: value.estado,
+      fechaLimite: value.fechaLimite || undefined,
+      categoriaId: value.categoriaId ? +value.categoriaId : undefined
     };
 
-    const obs = this.isEditing()
+    const request = this.isEditing()
       ? this.tareaService.update(this.tareaId()!, payload)
       : this.tareaService.create({
           titulo: payload.titulo,
@@ -113,18 +157,20 @@ export class TareaFormComponent implements OnInit {
           categoriaId: payload.categoriaId
         });
 
-    obs.subscribe({
+    request.subscribe({
       next: () => {
         this.toast.success(
           this.isEditing() ? 'Tarea actualizada' : 'Tarea creada',
-          this.isEditing() ? 'Los cambios se guardaron correctamente' : 'Tu nueva tarea está lista'
+          this.isEditing()
+            ? 'Los cambios se han guardado correctamente.'
+            : 'Tu nueva tarea ya forma parte del flujo.'
         );
         this.router.navigate(['/tareas']);
       },
-      error: (err) => {
+      error: err => {
         this.loading.set(false);
-        const msg = err.error?.mensaje ?? 'Error al guardar la tarea';
-        this.toast.error('Error', msg);
+        const message = err.error?.mensaje ?? 'No hemos podido guardar la tarea.';
+        this.toast.error('Error', message);
       }
     });
   }
