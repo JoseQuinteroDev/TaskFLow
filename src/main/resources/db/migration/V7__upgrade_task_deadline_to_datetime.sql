@@ -1,0 +1,2 @@
+ALTER TABLE tareas
+    MODIFY COLUMN fecha_limite DATETIME NULL;

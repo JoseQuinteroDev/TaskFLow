@@ -33,8 +33,17 @@ services:
       DB_NAME: taskflow_db
       DB_USER: taskflow_user
       DB_PASSWORD: taskflow_pass
-      JWT_SECRET: CAMBIA_ESTO_POR_UN_SECRET_BASE64_MUY_LARGO
+      APP_TIMEZONE: Europe/Madrid
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+      JWT_SECRET: VGFza0Zsb3dEZXZTYWZlU2VjcmV0S2V5Rm9ySldUMTIzNDU2Nzg5MEFCQ0RFRg==
       JWT_EXPIRATION: 86400000
+      EMAIL_PROVIDER: log
+      EMAIL_FROM: noreply@taskflow.local
+      SENDGRID_API_KEY:
+      TASK_REMINDERS_ENABLED: true
+      TASK_REMINDERS_CRON: "0 */15 * * * *"
+      TASK_REMINDERS_SOON_THRESHOLD: PT24H
+      TASK_REMINDERS_OVERDUE_WINDOW: PT20M
     ports:
       - "8080:8080"
 
