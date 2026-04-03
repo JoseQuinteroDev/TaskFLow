@@ -56,6 +56,14 @@
                 <span class="meta-chip meta-chip--category">{{ tarea.categoria.nombre }}</span>
             }
 
+            <span class="meta-chip meta-chip--info">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 7v5l3 2"/>
+                </svg>
+                Empieza {{ formatDate(tarea.fechaInicio) }}
+            </span>
+
             @if (tarea.fechaLimite) {
                 <span class="meta-chip" [class.meta-chip--danger]="tarea.vencida && !tarea.completada">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,7 +72,7 @@
                         <line x1="8" y1="2" x2="8" y2="6"/>
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    {{ formatDate(tarea.fechaLimite) }}
+                    Limite {{ formatDate(tarea.fechaLimite) }}
                 </span>
             }
 
@@ -74,7 +82,7 @@
                         <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/>
                         <path d="M10 17a2 2 0 0 0 4 0"/>
                     </svg>
-                    {{ reminderLabel() }}
+                    {{ reminderLabel() }} del inicio
                 </span>
             }
         </div>

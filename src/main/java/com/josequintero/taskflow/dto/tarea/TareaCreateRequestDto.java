@@ -1,6 +1,7 @@
 package com.josequintero.taskflow.dto.tarea;
 
 import com.josequintero.taskflow.model.enums.PrioridadTarea;
+import com.josequintero.taskflow.service.RecordatorioTareaRules;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +30,10 @@ public class TareaCreateRequestDto {
     @NotNull(message = "La prioridad es obligatoria")
     private PrioridadTarea prioridad;
 
+    @NotBlank(message = "La fecha de inicio es obligatoria")
+    @Size(max = 50, message = "La fecha de inicio debe enviarse en formato ISO")
+    private String fechaInicio;
+
     @Size(max = 50, message = "La fecha limite debe enviarse en formato ISO")
     private String fechaLimite;
 
@@ -36,7 +41,7 @@ public class TareaCreateRequestDto {
 
     private Boolean recordatorioActivo;
 
-    @Min(value = 5, message = "El recordatorio minimo es de 5 minutos")
-    @Max(value = 10080, message = "El recordatorio maximo es de 10080 minutos")
+    @Min(value = RecordatorioTareaRules.MIN_MINUTOS_ANTES, message = "El recordatorio minimo es de 5 minutos")
+    @Max(value = RecordatorioTareaRules.MAX_MINUTOS_ANTES, message = "El recordatorio maximo es de 10080 minutos")
     private Integer recordatorioMinutosAntes;
 }

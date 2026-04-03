@@ -24,6 +24,7 @@ public class TareaResponseDto {
     private String descripcion;
     private PrioridadTarea prioridad;
     private EstadoTarea estado;
+    private Instant fechaInicio;
     private Instant fechaLimite;
     private boolean vencida;
     private boolean completada;

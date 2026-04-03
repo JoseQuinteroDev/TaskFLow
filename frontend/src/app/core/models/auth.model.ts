@@ -26,3 +26,7 @@ export interface CurrentUserResponse {
     timezone: string;
     roles: string[];
 }
+
+export interface UpdateTimezoneRequest {
+    timezone: string;
+}

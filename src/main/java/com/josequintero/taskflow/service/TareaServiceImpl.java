@@ -53,7 +53,7 @@ public class TareaServiceImpl implements TareaService {
     @Transactional(readOnly = true)
     public List<TareaResponseDto> getAll() {
         Usuario currentUser = currentUserService.getCurrentUser();
-        return tareaRepository.findByUsuarioIdOrderByFechaCreacionDesc(currentUser.getId())
+        return tareaRepository.findByUsuarioIdOrderByFechaInicioAscFechaCreacionDesc(currentUser.getId())
                 .stream()
                 .map(tareaMapper::toResponseDto)
                 .toList();
@@ -70,11 +70,12 @@ public class TareaServiceImpl implements TareaService {
     @Transactional
     public TareaResponseDto create(TareaCreateRequestDto request) {
         Usuario currentUser = currentUserService.getCurrentUser();
-        Instant fechaLimite = parseDeadlineForCreate(request.getFechaLimite(), currentUser.getTimezone());
-        validateReminderConfig(request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes(), fechaLimite);
+        Instant fechaInicio = tareaTemporalService.parseFechaInicio(request.getFechaInicio(), currentUser.getTimezone());
+        Instant fechaLimite = tareaTemporalService.parseFechaLimite(request.getFechaLimite(), currentUser.getTimezone());
+        validateScheduleConfig(fechaInicio, fechaLimite, request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes());
         Categoria categoria = resolveCategory(request.getCategoriaId(), currentUser.getId());
 
-        Tarea tarea = tareaMapper.toEntity(request, fechaLimite, currentUser, categoria);
+        Tarea tarea = tareaMapper.toEntity(request, fechaInicio, fechaLimite, currentUser, categoria);
         return tareaMapper.toResponseDto(tareaRepository.save(tarea));
     }
 
@@ -83,17 +84,20 @@ public class TareaServiceImpl implements TareaService {
     public TareaResponseDto update(Long id, TareaUpdateRequestDto request) {
         Usuario currentUser = currentUserService.getCurrentUser();
         Tarea tarea = findOwnedTask(id, currentUser.getId());
+        Instant fechaInicio = tareaTemporalService.parseFechaInicio(request.getFechaInicio(), currentUser.getTimezone());
         Instant fechaLimite = tareaTemporalService.parseFechaLimite(request.getFechaLimite(), currentUser.getTimezone());
-        validateReminderConfig(request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes(), fechaLimite);
+        validateScheduleConfig(fechaInicio, fechaLimite, request.getRecordatorioActivo(), request.getRecordatorioMinutosAntes());
         Categoria categoria = resolveCategory(request.getCategoriaId(), currentUser.getId());
+        Instant previousStart = tarea.getFechaInicio();
         Instant previousDeadline = tarea.getFechaLimite();
         Boolean previousReminderActive = tarea.getRecordatorioActivo();
         Integer previousReminderMinutes = tarea.getRecordatorioMinutosAntes();
         EstadoTarea previousEstado = tarea.getEstado();
 
-        tareaMapper.updateEntity(tarea, request, fechaLimite, categoria);
+        tareaMapper.updateEntity(tarea, request, fechaInicio, fechaLimite, categoria);
 
         if (reminderStateRequiresReset(
+                previousStart,
                 previousDeadline,
                 previousReminderActive,
                 previousReminderMinutes,
@@ -165,8 +169,8 @@ public class TareaServiceImpl implements TareaService {
                 filtros.getTexto(),
                 filtros.getEstado(),
                 filtros.getPrioridad(),
-                tareaTemporalService.parseFiltroDesde(filtros.getDesde(), currentUser.getTimezone()),
-                tareaTemporalService.parseFiltroHasta(filtros.getHasta(), currentUser.getTimezone()),
+                tareaTemporalService.parseFiltroDesde(filtros.getInicioDesde(), currentUser.getTimezone()),
+                tareaTemporalService.parseFiltroHasta(filtros.getInicioHasta(), currentUser.getTimezone()),
                 filtros.getCategoriaId()
         );
 
@@ -189,44 +193,42 @@ public class TareaServiceImpl implements TareaService {
                 .orElseThrow(() -> new BusinessException("La categoria indicada no existe o no pertenece al usuario"));
     }
 
-    private Instant parseDeadlineForCreate(String rawValue, String timezone) {
-        Instant fechaLimite = tareaTemporalService.parseFechaLimite(rawValue, timezone);
-
-        if (fechaLimite != null && fechaLimite.isBefore(tareaTemporalService.ahora())) {
-            throw new BusinessException("La fecha limite debe ser actual o futura");
-        }
-
-        return fechaLimite;
-    }
-
-    private void validateReminderConfig(Boolean recordatorioActivo, Integer recordatorioMinutosAntes, Instant fechaLimite) {
-        if (!Boolean.TRUE.equals(recordatorioActivo)) {
-            return;
-        }
-
-        if (fechaLimite == null) {
-            throw new BusinessException("Debes indicar una fecha limite para activar un recordatorio");
-        }
-
-        if (recordatorioMinutosAntes == null) {
-            throw new BusinessException("Indica cuantos minutos antes quieres recibir el recordatorio");
-        }
-
-        if (recordatorioMinutosAntes < 5 || recordatorioMinutosAntes > 10080) {
-            throw new BusinessException("El recordatorio debe estar entre 5 y 10080 minutos antes");
-        }
-    }
-
     private boolean reminderStateRequiresReset(
+            Instant previousStart,
             Instant previousDeadline,
             Boolean previousReminderActive,
             Integer previousReminderMinutes,
             EstadoTarea previousEstado,
             Tarea tarea
     ) {
-        return !Objects.equals(previousDeadline, tarea.getFechaLimite())
+        return !Objects.equals(previousStart, tarea.getFechaInicio())
+                || !Objects.equals(previousDeadline, tarea.getFechaLimite())
                 || !Objects.equals(previousReminderActive, tarea.getRecordatorioActivo())
                 || !Objects.equals(previousReminderMinutes, tarea.getRecordatorioMinutosAntes())
                 || previousEstado != tarea.getEstado();
+    }
+
+    private void validateScheduleConfig(
+            Instant fechaInicio,
+            Instant fechaLimite,
+            Boolean recordatorioActivo,
+            Integer recordatorioMinutosAntes
+    ) {
+        if (fechaLimite != null && fechaLimite.isBefore(fechaInicio)) {
+            throw new BusinessException("La fecha limite no puede ser anterior a la fecha de inicio");
+        }
+
+        if (!Boolean.TRUE.equals(recordatorioActivo)) {
+            return;
+        }
+
+        if (recordatorioMinutosAntes == null) {
+            throw new BusinessException("Indica cuantos minutos antes del inicio quieres recibir el recordatorio");
+        }
+
+        if (recordatorioMinutosAntes < RecordatorioTareaRules.MIN_MINUTOS_ANTES
+                || recordatorioMinutosAntes > RecordatorioTareaRules.MAX_MINUTOS_ANTES) {
+            throw new BusinessException("El recordatorio debe estar entre 5 y 10080 minutos antes del inicio");
+        }
     }
 }

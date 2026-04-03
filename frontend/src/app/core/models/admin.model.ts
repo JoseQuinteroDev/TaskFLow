@@ -53,7 +53,7 @@ export interface AdminReminderFailure {
   tareaTitulo: string;
   destinatario: string;
   usuarioEmail: string;
-  tipo: 'PROXIMO_VENCIMIENTO' | 'VENCIDA';
+  tipo: 'ANTES_DE_INICIO' | 'PROXIMO_VENCIMIENTO' | 'VENCIDA';
   canal: 'EMAIL';
   error: string;
   fechaProgramada: string;

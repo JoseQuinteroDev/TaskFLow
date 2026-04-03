@@ -11,7 +11,7 @@
             <span class="page-header__eyebrow">Task editor</span>
             <h1 class="page-header__title">{{ isEditing() ? 'Editar tarea' : 'Nueva tarea' }}</h1>
             <p class="page-header__subtitle">
-                {{ isEditing() ? 'Actualiza los detalles y manten el seguimiento bajo control.' : 'Define el trabajo con claridad antes de ponerlo en marcha.' }}
+                {{ isEditing() ? 'Actualiza el momento de inicio, el limite y los avisos sin perder contexto.' : 'Define con claridad cuando empieza la tarea, cuando vence y cuando quieres recibir el aviso.' }}
             </p>
         </div>
     </div>
@@ -69,20 +69,20 @@
                                 class="form-control form-control-textarea"
                                 formControlName="descripcion"
                                 placeholder="Anade contexto, criterios o notas utiles para completar la tarea."
-                                maxlength="500"
+                                maxlength="1000"
                                 rows="5"
                         ></textarea>
 
                         <div class="form-field-meta form-field-meta--end">
-                            <span class="char-count">{{ descriptionLength() }}/500</span>
+                            <span class="char-count">{{ descriptionLength() }}/1000</span>
                         </div>
                     </div>
                 </section>
 
                 <section class="form-card">
                     <div class="form-card__header">
-                        <h2>Configuracion</h2>
-                        <p>Prioridad, estado y contexto operativo de la tarea.</p>
+                        <h2>Planificacion</h2>
+                        <p>Define cuando deberia empezar la tarea y, si aplica, cuando como maximo deberia estar terminada.</p>
                     </div>
 
                     <div class="form-group">
@@ -102,6 +102,39 @@
                     </div>
 
                     <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="fechaInicio">
+                                Fecha de inicio
+                                <span class="form-required">*</span>
+                            </label>
+                            <input
+                                    id="fechaInicio"
+                                    type="datetime-local"
+                                    class="form-control"
+                                    formControlName="fechaInicio"
+                                    [attr.min]="isEditing() ? null : minDateTime"
+                            />
+                            <small class="form-hint">Es el momento en el que deberias empezar esta tarea. Se guarda en UTC y se muestra en {{ currentTimezone }}.</small>
+                            @if (f('fechaInicio').invalid && f('fechaInicio').touched) {
+                                <span class="form-error">Define fecha y hora de inicio.</span>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="fechaLimite">Fecha limite</label>
+                            <input
+                                    id="fechaLimite"
+                                    type="datetime-local"
+                                    class="form-control"
+                                    formControlName="fechaLimite"
+                                    [attr.min]="deadlineMinValue()"
+                            />
+                            <small class="form-hint">Opcional. Marca el momento maximo en que la tarea deberia estar completada.</small>
+                            @if (hasScheduleError('deadlineBeforeStart')) {
+                                <span class="form-error">La fecha limite no puede ser anterior a la fecha de inicio.</span>
+                            }
+                        </div>
+
                         @if (isEditing()) {
                             <div class="form-group">
                                 <label class="form-label" for="estado">Estado</label>
@@ -112,18 +145,6 @@
                                 </select>
                             </div>
                         }
-
-                        <div class="form-group">
-                            <label class="form-label" for="fechaLimite">Fecha limite</label>
-                            <input
-                                    id="fechaLimite"
-                                    type="datetime-local"
-                                    class="form-control"
-                                    formControlName="fechaLimite"
-                                    [min]="minDateTime"
-                            />
-                            <small class="form-hint">Se guarda en UTC y se muestra en tu hora local: {{ currentTimezone }}.</small>
-                        </div>
 
                         <div class="form-group">
                             <label class="form-label" for="categoriaId">Categoria</label>
@@ -140,21 +161,21 @@
                 <section class="form-card">
                     <div class="form-card__header">
                         <h2>Recordatorio</h2>
-                        <p>Configura cuando quieres recibir un aviso por email antes del vencimiento.</p>
+                        <p>El aviso se envia siempre antes de la fecha de inicio, nunca antes del vencimiento.</p>
                     </div>
 
                     <div class="reminder-row">
-                        <label class="toggle-card" [class.toggle-card--active]="form.controls.recordatorioActivo.value">
+                        <label class="toggle-card" [class.toggle-card--active]="recordatorioActivoControl.value">
                             <span>
                                 <strong>Activar recordatorio</strong>
-                                <small>Disponible cuando la tarea tiene fecha y hora.</small>
+                                <small>Disponible cuando has definido una fecha de inicio con hora.</small>
                             </span>
 
                             <input
                                     type="checkbox"
                                     class="sr-only"
                                     formControlName="recordatorioActivo"
-                                    [disabled]="!form.controls.fechaLimite.value"
+                                    [disabled]="!fechaInicioControl.value"
                             />
                             <span class="toggle-card__switch"></span>
                         </label>
@@ -165,12 +186,13 @@
                                     id="recordatorioMinutosAntes"
                                     class="form-control"
                                     formControlName="recordatorioMinutosAntes"
-                                    [disabled]="!form.controls.recordatorioActivo.value"
+                                    [disabled]="!recordatorioActivoControl.value"
                             >
                                 @for (option of reminderOptions; track option.value) {
                                     <option [ngValue]="option.value">{{ option.label }}</option>
                                 }
                             </select>
+                            <small class="form-hint">{{ reminderHelperText() }}</small>
                         </div>
                     </div>
                 </section>
@@ -204,6 +226,11 @@
                     </div>
 
                     <div class="preview-card__detail">
+                        <span class="preview-card__label">Fecha de inicio</span>
+                        <strong>{{ formattedStart() }}</strong>
+                    </div>
+
+                    <div class="preview-card__detail">
                         <span class="preview-card__label">Fecha limite</span>
                         <strong>{{ formattedDeadline() }}</strong>
                     </div>
@@ -212,14 +239,19 @@
                         <span class="preview-card__label">Recordatorio</span>
                         <strong>{{ selectedReminderLabel() }}</strong>
                     </div>
+
+                    <div class="preview-card__detail">
+                        <span class="preview-card__label">Se enviara</span>
+                        <strong>{{ formattedReminderSchedule() }}</strong>
+                    </div>
                 </section>
 
                 <section class="preview-card preview-card--tips">
                     <span class="preview-card__eyebrow">Buenas practicas</span>
                     <ul class="preview-list">
-                        <li>Escribe titulos concretos y accionables.</li>
-                        <li>Usa prioridad alta solo cuando realmente afecte al flujo.</li>
-                        <li>Anade fecha y hora si la tarea depende de un momento real.</li>
+                        <li>Usa la fecha de inicio para reservar el momento en el que quieres ponerte con la tarea.</li>
+                        <li>Deja la fecha limite solo para el compromiso final o el deadline real.</li>
+                        <li>Activa recordatorios cuando el comienzo dependa de una hora concreta.</li>
                     </ul>
                 </section>
             </aside>

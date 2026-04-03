@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_tareas_usuario", columnList = "usuario_id"),
                 @Index(name = "idx_tareas_usuario_estado", columnList = "usuario_id, estado"),
                 @Index(name = "idx_tareas_usuario_prioridad", columnList = "usuario_id, prioridad"),
+                @Index(name = "idx_tareas_fecha_inicio", columnList = "fecha_inicio"),
                 @Index(name = "idx_tareas_fecha_limite", columnList = "fecha_limite")
         }
 )
@@ -59,6 +60,9 @@ public class Tarea {
     @Enumerated(EnumType.STRING)
     @Column(name = "prioridad", nullable = false, length = 20)
     private PrioridadTarea prioridad;
+
+    @Column(name = "fecha_inicio", nullable = false)
+    private Instant fechaInicio;
 
     @Column(name = "fecha_limite")
     private Instant fechaLimite;

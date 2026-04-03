@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
-import { AuthResponse, CurrentUserResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { AuthResponse, CurrentUserResponse, LoginRequest, RegisterRequest, UpdateTimezoneRequest } from '../models/auth.model';
 import { TimezoneService } from './timezone.service';
 
 @Injectable({
@@ -76,7 +76,14 @@ export class AuthService {
       return;
     }
 
-    this.http.get<CurrentUserResponse>(`${this.apiUrl}/me`).subscribe({
+    const detectedTimezone = this.timezoneService.detect();
+    const profileRequest = auth.timezone !== detectedTimezone
+      ? this.http.patch<CurrentUserResponse>(`${this.apiUrl}/timezone`, {
+          timezone: detectedTimezone
+        } satisfies UpdateTimezoneRequest)
+      : this.http.get<CurrentUserResponse>(`${this.apiUrl}/me`);
+
+    profileRequest.subscribe({
       next: profile => {
         this.setSession({
           ...auth,
@@ -88,11 +95,11 @@ export class AuthService {
       },
       error: () => {
         const normalizedName = this.normalizeDisplayName(auth.nombre, auth.email);
-        if (normalizedName !== auth.nombre || !auth.timezone) {
+        if (normalizedName !== auth.nombre || auth.timezone !== detectedTimezone) {
           this.setSession({
             ...auth,
             nombre: normalizedName,
-            timezone: auth.timezone || this.timezoneService.detect()
+            timezone: detectedTimezone
           });
         }
       }

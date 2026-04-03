@@ -161,7 +161,7 @@ export class DashboardComponent {
         ]);
         this.recentTareas.set(
           [...tareas]
-            .sort((a, b) => b.fechaCreacion.localeCompare(a.fechaCreacion))
+            .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))
             .slice(0, DashboardComponent.RECENT_TASK_LIMIT)
         );
         this.loading.set(false);

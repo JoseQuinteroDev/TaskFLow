@@ -7,6 +7,7 @@ export interface TareaCreateRequest {
     titulo: string;
     descripcion?: string;
     prioridad: PrioridadTarea;
+    fechaInicio: string;
     fechaLimite?: string;
     categoriaId?: number;
     recordatorioActivo?: boolean;
@@ -18,6 +19,7 @@ export interface TareaUpdateRequest {
     descripcion?: string;
     prioridad: PrioridadTarea;
     estado: EstadoTarea;
+    fechaInicio: string;
     fechaLimite?: string;
     categoriaId?: number;
     recordatorioActivo?: boolean;
@@ -30,18 +32,21 @@ export interface TareaResponse {
     descripcion?: string;
     prioridad: PrioridadTarea;
     estado: EstadoTarea;
+    fechaInicio: string;
     fechaLimite?: string;
     vencida: boolean;
     completada: boolean;
     recordatorioActivo: boolean;
     recordatorioMinutosAntes?: number;
     fechaCreacion: string;
+    fechaActualizacion: string;
     categoria?: CategoriaResponse;
 }
 
 export interface TareaResumen {
     total: number;
     pendientes: number;
+    enProceso: number;
     completadas: number;
     vencidas: number;
 }
@@ -50,8 +55,8 @@ export interface TareaFiltros {
     texto?: string;
     estado?: EstadoTarea;
     prioridad?: PrioridadTarea;
-    desde?: string;
-    hasta?: string;
+    inicioDesde?: string;
+    inicioHasta?: string;
     categoriaId?: number;
 }
 
@@ -72,5 +77,9 @@ export const RECORDATORIO_OPTIONS = [
     { value: 30, label: '30 minutos antes' },
     { value: 60, label: '1 hora antes' },
     { value: 180, label: '3 horas antes' },
-    { value: 1440, label: '24 horas antes' }
+    { value: 720, label: '12 horas antes' },
+    { value: 1440, label: '24 horas antes' },
+    { value: 2880, label: '2 dias antes' },
+    { value: 4320, label: '3 dias antes' },
+    { value: 10080, label: '7 dias antes' }
 ] as const;
