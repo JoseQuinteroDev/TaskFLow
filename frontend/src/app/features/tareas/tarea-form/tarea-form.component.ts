@@ -167,7 +167,7 @@ export class TareaFormComponent implements OnInit {
 
   selectedCategoryLabel(): string {
     const categoryId = this.f('categoriaId').value;
-    return this.categorias().find(item => item.id === categoryId)?.nombre ?? 'Sin categoria';
+    return this.categorias().find(item => item.id === categoryId)?.nombre ?? 'Sin categoría';
   }
 
   selectedReminderLabel(): string {
@@ -185,7 +185,7 @@ export class TareaFormComponent implements OnInit {
   }
 
   formattedDeadline(): string {
-    return this.formatLocalDateTime(this.fechaLimiteControl.value, 'Sin fecha limite');
+    return this.formatLocalDateTime(this.fechaLimiteControl.value, 'Sin fecha límite');
   }
 
   formattedReminderSchedule(): string {
@@ -197,7 +197,7 @@ export class TareaFormComponent implements OnInit {
     const minutosAntes = this.recordatorioMinutosAntesControl.value;
 
     if (!fechaInicioUtc || minutosAntes == null) {
-      return 'Define una fecha de inicio para calcular el envio';
+      return 'Define una fecha de inicio para calcular el envío.';
     }
 
     const fechaEnvio = new Date(fechaInicioUtc);
@@ -218,10 +218,10 @@ export class TareaFormComponent implements OnInit {
     }
 
     if (!this.recordatorioActivoControl.value) {
-      return 'Activalo si quieres recibir un aviso antes de empezar la tarea.';
+      return 'Actívalo si quieres recibir un aviso antes de empezar la tarea.';
     }
 
-    return `Se enviara el ${this.formattedReminderSchedule()} en tu hora local (${this.currentTimezone}).`;
+    return `Se enviará el ${this.formattedReminderSchedule()} en tu hora local (${this.currentTimezone}).`;
   }
 
   deadlineMinValue(): string | null {
@@ -276,7 +276,7 @@ export class TareaFormComponent implements OnInit {
 
     if (!fechaInicioUtc) {
       this.loading.set(false);
-      this.toast.error('Error', 'La fecha de inicio no tiene un formato valido.');
+      this.toast.error('Error', 'La fecha de inicio no tiene un formato válido.');
       return;
     }
 

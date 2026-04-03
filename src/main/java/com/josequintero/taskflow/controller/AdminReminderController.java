@@ -28,8 +28,8 @@ public class AdminReminderController {
     @GetMapping("/failures")
     public List<AdminReminderFailureResponseDto> getFailures(
             @RequestParam(defaultValue = "8")
-            @Min(value = 1, message = "El limite minimo es 1")
-            @Max(value = 20, message = "El limite maximo es 20")
+            @Min(value = 1, message = "El límite mínimo es 1")
+            @Max(value = 20, message = "El límite máximo es 20")
             int limit
     ) {
         return adminMonitoringService.getRecentReminderFailures(limit);

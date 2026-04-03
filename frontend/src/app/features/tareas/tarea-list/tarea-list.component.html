@@ -1,7 +1,7 @@
 <div class="page-wrapper">
     <div class="page-header">
         <div>
-            <span class="page-header__eyebrow">Task management</span>
+            <span class="page-header__eyebrow">Gestión de tareas</span>
             <h1 class="page-header__title">Mis tareas</h1>
             <p class="page-header__subtitle">{{ totalLabel() }} visibles en la vista actual.</p>
         </div>
@@ -11,10 +11,10 @@
                 <span>Ordenar</span>
                 <select class="form-control" (change)="onSort($event)" [value]="sortField">
                     <option value="fechaInicio">Inicio</option>
-                    <option value="fechaCreacion">Mas recientes</option>
-                    <option value="fechaLimite">Fecha limite</option>
+                    <option value="fechaCreacion">Más recientes</option>
+                    <option value="fechaLimite">Fecha límite</option>
                     <option value="prioridad">Prioridad</option>
-                    <option value="titulo">Titulo A-Z</option>
+                    <option value="titulo">Título A-Z</option>
                 </select>
             </label>
 
@@ -25,7 +25,7 @@
                         [class.active]="viewMode() === 'grid'"
                         [attr.aria-pressed]="viewMode() === 'grid'"
                         (click)="viewMode.set('grid')"
-                        title="Vista cuadricula"
+                        title="Vista en cuadrícula"
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"/>
@@ -41,7 +41,7 @@
                         [class.active]="viewMode() === 'list'"
                         [attr.aria-pressed]="viewMode() === 'list'"
                         (click)="viewMode.set('list')"
-                        title="Vista lista"
+                        title="Vista en lista"
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="21" y2="6"/>
@@ -113,8 +113,8 @@
 @if (deleteId()) {
     <app-confirm-dialog
             title="Eliminar tarea"
-            message="Vas a borrar esta tarea de forma permanente. Esta accion no se puede deshacer."
-            confirmLabel="Si, eliminar"
+            message="Vas a borrar esta tarea de forma permanente. Esta acción no se puede deshacer."
+            confirmLabel="Sí, eliminar"
             (confirmed)="confirmDelete()"
             (cancelled)="deleteId.set(null)"
     />

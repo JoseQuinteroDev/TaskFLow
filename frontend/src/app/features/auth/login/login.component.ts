@@ -29,9 +29,9 @@ export class LoginComponent {
   errorMsg = signal('');
 
   features = [
-    { text: 'Organiza tareas por prioridad y categoria' },
-    { text: 'Haz seguimiento de progreso sin perder contexto' },
-    { text: 'Encuentra lo importante con filtros claros y rapidos' }
+    { text: 'Organiza tareas por prioridad y categoría.' },
+    { text: 'Haz seguimiento del progreso sin perder contexto.' },
+    { text: 'Encuentra lo importante con filtros claros y rápidos.' }
   ];
 
   togglePassword(): void {
@@ -49,15 +49,15 @@ export class LoginComponent {
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
-        this.toast.success('Bienvenido', 'Tu sesion se ha iniciado correctamente');
+        this.toast.success('Bienvenido', 'Tu sesión se ha iniciado correctamente.');
         this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.errorMsg.set(
           err.status === 401
-            ? 'El email o la contrasena no coinciden.'
-            : 'No hemos podido iniciar sesion. Intentalo de nuevo.'
+          ? 'El correo electrónico o la contraseña no coinciden.'
+            : 'No hemos podido iniciar sesión. Inténtalo de nuevo.'
         );
       }
     });

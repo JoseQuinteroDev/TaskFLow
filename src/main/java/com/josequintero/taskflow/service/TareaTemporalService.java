@@ -64,7 +64,7 @@ public class TareaTemporalService {
         return parseOptionalDateTime(
                 valor,
                 timezone,
-                "La fecha limite debe tener formato ISO con fecha y hora, por ejemplo 2026-04-07T18:00 o 2026-04-07T16:00:00Z"
+                "La fecha límite debe tener formato ISO con fecha y hora, por ejemplo 2026-04-07T18:00 o 2026-04-07T16:00:00Z"
         );
     }
 
@@ -96,7 +96,7 @@ public class TareaTemporalService {
 
     public String formatForEmail(Instant fechaHora, String timezone) {
         if (fechaHora == null) {
-            return "Sin fecha limite";
+            return "Sin fecha límite";
         }
 
         ZonedDateTime zonedDateTime = fechaHora.atZone(resolveZone(timezone, null));
@@ -209,7 +209,7 @@ public class TareaTemporalService {
             try {
                 return ZoneId.of(zoneId.trim());
             } catch (DateTimeException ex) {
-                throw new BusinessException("La zona horaria indicada no es valida");
+                throw new BusinessException("La zona horaria indicada no es válida");
             }
         }
 
@@ -217,7 +217,7 @@ public class TareaTemporalService {
             try {
                 return ZoneId.of(fallbackZoneId.trim());
             } catch (DateTimeException ex) {
-                throw new BusinessException("La zona horaria indicada no es valida");
+                throw new BusinessException("La zona horaria indicada no es válida");
             }
         }
 

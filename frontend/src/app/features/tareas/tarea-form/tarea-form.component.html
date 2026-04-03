@@ -8,10 +8,10 @@
         </a>
 
         <div>
-            <span class="page-header__eyebrow">Task editor</span>
+            <span class="page-header__eyebrow">Editor de tareas</span>
             <h1 class="page-header__title">{{ isEditing() ? 'Editar tarea' : 'Nueva tarea' }}</h1>
             <p class="page-header__subtitle">
-                {{ isEditing() ? 'Actualiza el momento de inicio, el limite y los avisos sin perder contexto.' : 'Define con claridad cuando empieza la tarea, cuando vence y cuando quieres recibir el aviso.' }}
+                {{ isEditing() ? 'Actualiza el momento de inicio, el límite y los avisos sin perder contexto.' : 'Define con claridad cuándo empieza la tarea, cuándo vence y cuándo quieres recibir el aviso.' }}
             </p>
         </div>
     </div>
@@ -25,13 +25,13 @@
             <form [formGroup]="form" (ngSubmit)="onSubmit()" class="task-form" novalidate>
                 <section class="form-card">
                     <div class="form-card__header">
-                        <h2>Informacion basica</h2>
-                        <p>Describe que hay que hacer y deja claro el contexto.</p>
+                        <h2>Información básica</h2>
+                        <p>Describe qué hay que hacer y deja claro el contexto.</p>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="titulo">
-                            Titulo
+                            Título
                             <span class="form-required">*</span>
                         </label>
 
@@ -40,7 +40,7 @@
                                 type="text"
                                 class="form-control"
                                 formControlName="titulo"
-                                placeholder="Que necesitas hacer?"
+                                placeholder="¿Qué necesitas hacer?"
                                 maxlength="100"
                         />
 
@@ -63,12 +63,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="descripcion">Descripcion</label>
+                        <label class="form-label" for="descripcion">Descripción</label>
                         <textarea
                                 id="descripcion"
                                 class="form-control form-control-textarea"
                                 formControlName="descripcion"
-                                placeholder="Anade contexto, criterios o notas utiles para completar la tarea."
+                                placeholder="Añade contexto, criterios o notas útiles para completar la tarea."
                                 maxlength="1000"
                                 rows="5"
                         ></textarea>
@@ -81,8 +81,8 @@
 
                 <section class="form-card">
                     <div class="form-card__header">
-                        <h2>Planificacion</h2>
-                        <p>Define cuando deberia empezar la tarea y, si aplica, cuando como maximo deberia estar terminada.</p>
+                        <h2>Planificación</h2>
+                        <p>Define cuándo debería empezar la tarea y, si aplica, cuándo como máximo debería estar terminada.</p>
                     </div>
 
                     <div class="form-group">
@@ -114,14 +114,14 @@
                                     formControlName="fechaInicio"
                                     [attr.min]="isEditing() ? null : minDateTime"
                             />
-                            <small class="form-hint">Es el momento en el que deberias empezar esta tarea. Se guarda en UTC y se muestra en {{ currentTimezone }}.</small>
+                            <small class="form-hint">Es el momento en el que deberías empezar esta tarea. Se guarda en UTC y se muestra en {{ currentTimezone }}.</small>
                             @if (f('fechaInicio').invalid && f('fechaInicio').touched) {
                                 <span class="form-error">Define fecha y hora de inicio.</span>
                             }
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="fechaLimite">Fecha limite</label>
+                            <label class="form-label" for="fechaLimite">Fecha límite</label>
                             <input
                                     id="fechaLimite"
                                     type="datetime-local"
@@ -129,9 +129,9 @@
                                     formControlName="fechaLimite"
                                     [attr.min]="deadlineMinValue()"
                             />
-                            <small class="form-hint">Opcional. Marca el momento maximo en que la tarea deberia estar completada.</small>
+                            <small class="form-hint">Opcional. Marca el momento máximo en que la tarea debería estar completada.</small>
                             @if (hasScheduleError('deadlineBeforeStart')) {
-                                <span class="form-error">La fecha limite no puede ser anterior a la fecha de inicio.</span>
+                                <span class="form-error">La fecha límite no puede ser anterior a la fecha de inicio.</span>
                             }
                         </div>
 
@@ -147,9 +147,9 @@
                         }
 
                         <div class="form-group">
-                            <label class="form-label" for="categoriaId">Categoria</label>
+                            <label class="form-label" for="categoriaId">Categoría</label>
                             <select id="categoriaId" class="form-control" formControlName="categoriaId">
-                                <option [ngValue]="null">Sin categoria</option>
+                                <option [ngValue]="null">Sin categoría</option>
                                 @for (cat of categorias(); track cat.id) {
                                     <option [ngValue]="cat.id">{{ cat.nombre }}</option>
                                 }
@@ -161,7 +161,7 @@
                 <section class="form-card">
                     <div class="form-card__header">
                         <h2>Recordatorio</h2>
-                        <p>El aviso se envia siempre antes de la fecha de inicio, nunca antes del vencimiento.</p>
+                        <p>El aviso se envía siempre antes de la fecha de inicio, nunca antes del vencimiento.</p>
                     </div>
 
                     <div class="reminder-row">
@@ -214,9 +214,9 @@
             <aside class="task-preview">
                 <section class="preview-card">
                     <span class="preview-card__eyebrow">Vista previa</span>
-                    <h2>{{ f('titulo').value || 'Tu proxima tarea' }}</h2>
+                    <h2>{{ f('titulo').value || 'Tu próxima tarea' }}</h2>
                     <p>
-                        {{ f('descripcion').value || 'Anade una descripcion breve para que el contexto de la tarea quede claro para ti o para tu equipo.' }}
+                        {{ f('descripcion').value || 'Añade una descripción breve para que el contexto de la tarea quede claro para ti o para tu equipo.' }}
                     </p>
 
                     <div class="preview-card__meta">
@@ -231,7 +231,7 @@
                     </div>
 
                     <div class="preview-card__detail">
-                        <span class="preview-card__label">Fecha limite</span>
+                        <span class="preview-card__label">Fecha límite</span>
                         <strong>{{ formattedDeadline() }}</strong>
                     </div>
 
@@ -241,16 +241,16 @@
                     </div>
 
                     <div class="preview-card__detail">
-                        <span class="preview-card__label">Se enviara</span>
+                        <span class="preview-card__label">Se enviará</span>
                         <strong>{{ formattedReminderSchedule() }}</strong>
                     </div>
                 </section>
 
                 <section class="preview-card preview-card--tips">
-                    <span class="preview-card__eyebrow">Buenas practicas</span>
+                    <span class="preview-card__eyebrow">Buenas prácticas</span>
                     <ul class="preview-list">
                         <li>Usa la fecha de inicio para reservar el momento en el que quieres ponerte con la tarea.</li>
-                        <li>Deja la fecha limite solo para el compromiso final o el deadline real.</li>
+                        <li>Deja la fecha límite solo para el compromiso final o el deadline real.</li>
                         <li>Activa recordatorios cuando el comienzo dependa de una hora concreta.</li>
                     </ul>
                 </section>

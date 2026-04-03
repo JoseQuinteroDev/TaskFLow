@@ -4,7 +4,7 @@
             class="shell__scrim"
             [class.shell__scrim--visible]="mobileMenuOpen()"
             (click)="closeMobileMenu()"
-            aria-label="Cerrar menu"
+            aria-label="Cerrar menú"
     ></button>
 
     <aside
@@ -20,7 +20,7 @@
                 @if (!sidebarCollapsed()) {
                     <div class="brand__content">
                         <span class="brand__title">TaskFlow</span>
-                        <span class="brand__subtitle">Task management</span>
+                        <span class="brand__subtitle">Gestión de tareas</span>
                     </div>
                 }
             </a>
@@ -30,8 +30,8 @@
                         type="button"
                         class="icon-button icon-button--desktop"
                         (click)="toggleSidebar()"
-                        [attr.aria-label]="sidebarCollapsed() ? 'Expandir sidebar' : 'Compactar menu'"
-                        [title]="sidebarCollapsed() ? 'Expandir sidebar' : 'Compactar menu'"
+                        [attr.aria-label]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Compactar menú'"
+                        [title]="sidebarCollapsed() ? 'Expandir barra lateral' : 'Compactar menú'"
                 >
                     @if (sidebarCollapsed()) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -50,7 +50,7 @@
                         (click)="closeMobileMenu()"
                         aria-controls="app-sidebar"
                         [attr.aria-expanded]="mobileMenuOpen()"
-                        aria-label="Cerrar menu"
+                        aria-label="Cerrar menú"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -62,7 +62,7 @@
 
         <div class="sidebar__section">
             @if (!sidebarCollapsed()) {
-                <p class="sidebar__eyebrow">Workspace</p>
+                <p class="sidebar__eyebrow">Espacio de trabajo</p>
             }
 
             <nav class="sidebar__nav">
@@ -85,7 +85,7 @@
 
             @if (isAdmin()) {
                 @if (!sidebarCollapsed()) {
-                    <p class="sidebar__eyebrow">Admin zone</p>
+                    <p class="sidebar__eyebrow">Zona de administración</p>
                 }
 
                 <nav class="sidebar__nav">
@@ -127,14 +127,14 @@
 
                 @if (!sidebarCollapsed()) {
                     <button class="btn btn-ghost btn-sm account-panel__logout" type="button" (click)="logout()">
-                        Cerrar sesion
+                        Cerrar sesión
                     </button>
                 } @else {
                     <button
                             class="icon-button icon-button--logout"
                             type="button"
                             (click)="logout()"
-                            aria-label="Cerrar sesion"
+                            aria-label="Cerrar sesión"
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -156,7 +156,7 @@
                         (click)="toggleMobileMenu()"
                         aria-controls="app-sidebar"
                         [attr.aria-expanded]="mobileMenuOpen()"
-                        aria-label="Abrir menu"
+                        aria-label="Abrir menú"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -166,9 +166,9 @@
                 </button>
 
                 <div>
-                    <span class="shell__eyebrow">{{ isInAdminArea() ? 'Administration workspace' : 'Premium workspace' }}</span>
+                    <span class="shell__eyebrow">{{ isInAdminArea() ? 'Área de administración' : 'Espacio de trabajo premium' }}</span>
                     <strong class="shell__title">
-                        {{ isInAdminArea() ? 'Gestiona usuarios, accesos y operacion' : 'Organiza tu trabajo con claridad' }}
+                        {{ isInAdminArea() ? 'Gestiona usuarios, accesos y operación' : 'Organiza tu trabajo con claridad' }}
                     </strong>
                 </div>
             </div>

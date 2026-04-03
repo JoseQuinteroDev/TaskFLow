@@ -44,8 +44,8 @@ export class RegisterComponent {
 
   features = [
     'Crea un espacio de trabajo serio y limpio desde el primer minuto.',
-    'Centraliza tareas, prioridades y categorias en una sola interfaz.',
-    'Manten contexto sin perder tiempo entre vistas o formularios.'
+    'Centraliza tareas, prioridades y categorías en una sola interfaz.',
+    'Mantén el contexto sin perder tiempo entre vistas o formularios.'
   ];
 
   f(name: string) {
@@ -64,7 +64,7 @@ export class RegisterComponent {
 
   strengthLabel(): string {
     const map = {
-      weak: 'Debil',
+      weak: 'Débil',
       medium: 'Media',
       strong: 'Fuerte'
     };
@@ -96,15 +96,15 @@ export class RegisterComponent {
 
     this.authService.register(this.form.getRawValue()).subscribe({
       next: () => {
-        this.toast.success('Cuenta creada', 'Tu workspace esta listo para empezar');
+        this.toast.success('Cuenta creada', 'Tu espacio de trabajo está listo para empezar.');
         this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.errorMsg.set(
           err.status === 409
-            ? 'Ese email ya esta registrado.'
-            : 'No hemos podido crear tu cuenta. Intentalo de nuevo.'
+            ? 'Ese email ya está registrado.'
+            : 'No hemos podido crear tu cuenta. Inténtalo de nuevo.'
         );
       }
     });

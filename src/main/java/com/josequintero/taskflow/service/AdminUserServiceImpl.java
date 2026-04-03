@@ -89,7 +89,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         String normalizedEmail = normalizeEmail(request.getEmail());
 
         if (usuarioRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new BusinessException("Ya existe un usuario con ese email");
+            throw new BusinessException("Ya existe un usuario con ese correo electrónico");
         }
 
         Usuario usuario = Usuario.builder()
@@ -111,7 +111,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         Usuario currentUser = currentUserService.getCurrentUser();
 
         if (currentUser.getId().equals(targetUser.getId()) && !activo) {
-            throw new BusinessException("No puedes desactivar tu propia cuenta desde el panel de administracion");
+            throw new BusinessException("No puedes desactivar tu propia cuenta desde el panel de administración");
         }
 
         if (!activo) {
@@ -147,7 +147,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         Usuario targetUser = getManagedUser(userId);
 
         if (currentUser.getId().equals(targetUser.getId())) {
-            throw new BusinessException("No puedes eliminar tu propia cuenta desde el panel de administracion");
+            throw new BusinessException("No puedes eliminar tu propia cuenta desde el panel de administración");
         }
 
         ensureAdminRoleCanBeRemoved(targetUser);

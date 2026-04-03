@@ -16,11 +16,11 @@ import lombok.Setter;
 @Builder
 public class LoginRequestDto {
 
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email no tiene un formato valido")
+    @NotBlank(message = "El correo electrónico es obligatorio")
+    @Email(message = "El correo electrónico no tiene un formato válido")
     private String email;
 
-    @NotBlank(message = "La contrasena es obligatoria")
+    @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
     @Size(max = 60, message = "La zona horaria no puede superar los 60 caracteres")

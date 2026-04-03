@@ -26,12 +26,12 @@ export class MainLayoutComponent {
   readonly userName = () => this.authService.currentUser()?.nombre ?? 'Usuario';
   readonly userEmail = () => this.authService.currentUser()?.email ?? '';
   readonly userInitial = () => (this.userName().trim().charAt(0) || 'U').toUpperCase();
-  readonly userRoleLabel = () => (this.isAdmin() ? 'Administrador' : 'Miembro del workspace');
+  readonly userRoleLabel = () => (this.isAdmin() ? 'Administrador' : 'Miembro del espacio de trabajo');
 
   workspaceNavItems: NavItem[] = [
     {
       path: '/dashboard',
-      label: 'Dashboard',
+      label: 'Panel',
       icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`
     },
     {
@@ -41,7 +41,7 @@ export class MainLayoutComponent {
     },
     {
       path: '/categorias',
-      label: 'Categorias',
+      label: 'Categorías',
       icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.41 20.6a2 2 0 0 1-2.82 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>`
     }
   ];
@@ -49,7 +49,7 @@ export class MainLayoutComponent {
   adminNavItems: NavItem[] = [
     {
       path: '/admin',
-      label: 'Administracion',
+      label: 'Administración',
       icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`
     }
   ];

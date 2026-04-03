@@ -21,11 +21,11 @@ import lombok.Setter;
 @Builder
 public class TareaUpdateRequestDto {
 
-    @NotBlank(message = "El titulo es obligatorio")
-    @Size(min = 3, max = 100, message = "El titulo debe tener entre 3 y 100 caracteres")
+    @NotBlank(message = "El título es obligatorio")
+    @Size(min = 3, max = 100, message = "El título debe tener entre 3 y 100 caracteres")
     private String titulo;
 
-    @Size(max = 1000, message = "La descripcion no puede superar los 1000 caracteres")
+    @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")
     private String descripcion;
 
     @NotNull(message = "La prioridad es obligatoria")
@@ -38,14 +38,14 @@ public class TareaUpdateRequestDto {
     @Size(max = 50, message = "La fecha de inicio debe enviarse en formato ISO")
     private String fechaInicio;
 
-    @Size(max = 50, message = "La fecha limite debe enviarse en formato ISO")
+    @Size(max = 50, message = "La fecha límite debe enviarse en formato ISO")
     private String fechaLimite;
 
     private Long categoriaId;
 
     private Boolean recordatorioActivo;
 
-    @Min(value = RecordatorioTareaRules.MIN_MINUTOS_ANTES, message = "El recordatorio minimo es de 5 minutos")
-    @Max(value = RecordatorioTareaRules.MAX_MINUTOS_ANTES, message = "El recordatorio maximo es de 10080 minutos")
+    @Min(value = RecordatorioTareaRules.MIN_MINUTOS_ANTES, message = "El recordatorio mínimo es de 5 minutos")
+    @Max(value = RecordatorioTareaRules.MAX_MINUTOS_ANTES, message = "El recordatorio máximo es de 10080 minutos")
     private Integer recordatorioMinutosAntes;
 }

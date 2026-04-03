@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
                 details.put(violation.getPropertyPath().toString(), violation.getMessage())
         );
 
-        return buildResponse(HttpStatus.BAD_REQUEST, "Error de validacion", request, details);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Error de validación", request, details);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

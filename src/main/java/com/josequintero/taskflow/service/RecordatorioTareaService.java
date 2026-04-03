@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -138,7 +138,7 @@ public class RecordatorioTareaService {
     private EmailMessage buildMessage(Tarea tarea, TipoRecordatorioTarea tipo) {
         String fechaInicio = tareaTemporalService.formatForEmail(tarea.getFechaInicio(), tarea.getUsuario().getTimezone());
         String fechaLimite = tarea.getFechaLimite() == null
-                ? "Sin fecha limite"
+                ? "Sin fecha límite"
                 : tareaTemporalService.formatForEmail(tarea.getFechaLimite(), tarea.getUsuario().getTimezone());
         String fechaRecordatorio = tareaTemporalService.formatForEmail(
                 resolveScheduledAt(tarea, tipo),
@@ -153,11 +153,11 @@ public class RecordatorioTareaService {
                 Tarea: %s
                 Prioridad: %s
                 Fecha de inicio: %s
-                Fecha limite: %s
+                Fecha límite: %s
                 Recordatorio: %s minutos antes
                 Aviso programado para: %s
 
-                Revisa TaskFlow para actualizar su estado o ajustar la planificacion.
+                Revisa TaskFlow para actualizar su estado o ajustar la planificación.
                 """.formatted(
                 intro,
                 tarea.getTitulo(),
@@ -172,7 +172,7 @@ public class RecordatorioTareaService {
                 <html>
                   <body style="font-family:Arial,sans-serif;background:#0b0d12;color:#e8edf7;padding:24px;">
                     <div style="max-width:560px;margin:0 auto;background:#12161f;border:1px solid #232936;border-radius:20px;padding:28px;">
-                      <p style="margin:0 0 10px;color:#92a0b8;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;">TaskFlow Reminder</p>
+                      <p style="margin:0 0 10px;color:#92a0b8;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;">Recordatorio de TaskFlow</p>
                       <h1 style="margin:0 0 14px;font-size:24px;color:#f4f7fb;">%s</h1>
                       <p style="margin:0 0 22px;color:#cbd5e1;line-height:1.6;">%s</p>
                       <div style="padding:18px;border-radius:16px;background:#0f131b;border:1px solid #232936;">
@@ -182,7 +182,7 @@ public class RecordatorioTareaService {
                         <p style="margin:0 0 16px;color:#f4f7fb;">%s</p>
                         <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha de inicio</p>
                         <p style="margin:0 0 16px;color:#87f3b0;font-weight:700;">%s</p>
-                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha limite</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha límite</p>
                         <p style="margin:0 0 16px;color:#f4f7fb;">%s</p>
                         <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Recordatorio</p>
                         <p style="margin:0 0 16px;color:#f4f7fb;">%s minutos antes</p>

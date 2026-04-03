@@ -8,7 +8,7 @@
         <input
                 type="text"
                 class="form-control search-shell__input"
-                placeholder="Buscar por titulo o descripcion"
+                placeholder="Buscar por título o descripción"
                 [formControl]="form.controls.texto"
         />
 
@@ -39,7 +39,7 @@
 
         @if (categorias.length > 0) {
             <select class="form-control" formControlName="categoriaId">
-                <option value="">Todas las categorias</option>
+                <option value="">Todas las categorías</option>
                 @for (cat of categorias; track cat.id) {
                     <option [value]="cat.id">{{ cat.nombre }}</option>
                 }

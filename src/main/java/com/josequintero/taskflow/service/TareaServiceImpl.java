@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TareaServiceImpl implements TareaService {
@@ -190,7 +190,7 @@ public class TareaServiceImpl implements TareaService {
         }
 
         return categoriaRepository.findByIdAndUsuarioId(categoriaId, userId)
-                .orElseThrow(() -> new BusinessException("La categoria indicada no existe o no pertenece al usuario"));
+                .orElseThrow(() -> new BusinessException("La categoría indicada no existe o no pertenece al usuario"));
     }
 
     private boolean reminderStateRequiresReset(
@@ -215,7 +215,7 @@ public class TareaServiceImpl implements TareaService {
             Integer recordatorioMinutosAntes
     ) {
         if (fechaLimite != null && fechaLimite.isBefore(fechaInicio)) {
-            throw new BusinessException("La fecha limite no puede ser anterior a la fecha de inicio");
+            throw new BusinessException("La fecha límite no puede ser anterior a la fecha de inicio");
         }
 
         if (!Boolean.TRUE.equals(recordatorioActivo)) {
@@ -223,7 +223,7 @@ public class TareaServiceImpl implements TareaService {
         }
 
         if (recordatorioMinutosAntes == null) {
-            throw new BusinessException("Indica cuantos minutos antes del inicio quieres recibir el recordatorio");
+            throw new BusinessException("Indica cuántos minutos antes del inicio quieres recibir el recordatorio");
         }
 
         if (recordatorioMinutosAntes < RecordatorioTareaRules.MIN_MINUTOS_ANTES
