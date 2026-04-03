@@ -2,6 +2,7 @@ package com.josequintero.taskflow.exception;
 
 import com.josequintero.taskflow.dto.error.ApiErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -57,6 +58,20 @@ public class GlobalExceptionHandler {
                 request,
                 null
         );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorDto> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request
+    ) {
+        Map<String, String> details = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(violation ->
+                details.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+
+        return buildResponse(HttpStatus.BAD_REQUEST, "Error de validacion", request, details);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

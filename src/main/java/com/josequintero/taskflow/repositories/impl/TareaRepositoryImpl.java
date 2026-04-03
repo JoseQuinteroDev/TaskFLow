@@ -62,12 +62,12 @@ public class TareaRepositoryImpl implements TareaRepositoryCustom {
         }
 
         if (fechaDesde != null) {
-            jpql.append(" AND t.fechaLimite >= :fechaDesde");
+            jpql.append(" AND t.fechaInicio >= :fechaDesde");
             parametros.put("fechaDesde", fechaDesde);
         }
 
         if (fechaHasta != null) {
-            jpql.append(" AND t.fechaLimite <= :fechaHasta");
+            jpql.append(" AND t.fechaInicio <= :fechaHasta");
             parametros.put("fechaHasta", fechaHasta);
         }
 
@@ -76,7 +76,7 @@ public class TareaRepositoryImpl implements TareaRepositoryCustom {
             parametros.put("categoriaId", categoriaId);
         }
 
-        jpql.append(" ORDER BY t.fechaLimite ASC, t.fechaCreacion DESC");
+        jpql.append(" ORDER BY t.fechaInicio ASC, t.fechaLimite ASC, t.fechaCreacion DESC");
 
         TypedQuery<Tarea> query = entityManager.createQuery(jpql.toString(), Tarea.class);
         parametros.forEach(query::setParameter);

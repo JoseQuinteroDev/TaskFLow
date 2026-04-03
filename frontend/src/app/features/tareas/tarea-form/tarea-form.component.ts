@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { TareaService } from '../../../core/services/tarea.service';
@@ -16,6 +16,31 @@ import {
 } from '../../../core/models/tarea.model';
 
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
+
+function scheduleValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const fechaInicio = control.get('fechaInicio')?.value as string | null | undefined;
+    const fechaLimite = control.get('fechaLimite')?.value as string | null | undefined;
+    const recordatorioActivo = control.get('recordatorioActivo')?.value as boolean | null | undefined;
+
+    if (recordatorioActivo && !fechaInicio) {
+      return { reminderWithoutStart: true };
+    }
+
+    if (!fechaInicio || !fechaLimite) {
+      return null;
+    }
+
+    const inicio = new Date(fechaInicio);
+    const limite = new Date(fechaLimite);
+
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(limite.getTime())) {
+      return null;
+    }
+
+    return limite.getTime() < inicio.getTime() ? { deadlineBeforeStart: true } : null;
+  };
+}
 
 @Component({
   selector: 'app-tarea-form',
@@ -62,32 +87,54 @@ export class TareaFormComponent implements OnInit {
       Validators.minLength(3),
       Validators.maxLength(100)
     ]),
-    descripcion: this.fb.nonNullable.control('', Validators.maxLength(500)),
+    descripcion: this.fb.nonNullable.control('', Validators.maxLength(1000)),
     prioridad: this.fb.nonNullable.control<PrioridadTarea>('MEDIA', Validators.required),
     estado: this.fb.nonNullable.control<EstadoTarea>('PENDIENTE'),
+    fechaInicio: this.fb.nonNullable.control('', Validators.required),
     fechaLimite: this.fb.nonNullable.control(''),
     categoriaId: this.fb.control<number | null>(null),
     recordatorioActivo: this.fb.nonNullable.control(false),
     recordatorioMinutosAntes: this.fb.control<number | null>(60)
-  });
+  }, { validators: scheduleValidator() });
+
+  get fechaInicioControl() {
+    return this.form.controls['fechaInicio'];
+  }
+
+  get fechaLimiteControl() {
+    return this.form.controls['fechaLimite'];
+  }
+
+  get recordatorioActivoControl() {
+    return this.form.controls['recordatorioActivo'];
+  }
+
+  get recordatorioMinutosAntesControl() {
+    return this.form.controls['recordatorioMinutosAntes'];
+  }
 
   ngOnInit(): void {
     this.categoriaService.getAll().subscribe(categorias => this.categorias.set(categorias));
 
-    this.form.controls.recordatorioActivo.valueChanges.subscribe(active => {
+    this.recordatorioActivoControl.valueChanges.subscribe(active => {
       if (!active) {
-        this.form.controls.recordatorioMinutosAntes.setValue(null);
+        this.recordatorioMinutosAntesControl.setValue(null);
         return;
       }
 
-      if (!this.form.controls.recordatorioMinutosAntes.value) {
-        this.form.controls.recordatorioMinutosAntes.setValue(60);
+      if (!this.fechaInicioControl.value) {
+        this.recordatorioActivoControl.setValue(false, { emitEvent: false });
+        return;
+      }
+
+      if (!this.recordatorioMinutosAntesControl.value) {
+        this.recordatorioMinutosAntesControl.setValue(60);
       }
     });
 
-    this.form.controls.fechaLimite.valueChanges.subscribe(value => {
-      if (!value && this.form.controls.recordatorioActivo.value) {
-        this.form.controls.recordatorioActivo.setValue(false);
+    this.fechaInicioControl.valueChanges.subscribe(value => {
+      if (!value && this.recordatorioActivoControl.value) {
+        this.recordatorioActivoControl.setValue(false);
       }
     });
 
@@ -124,28 +171,70 @@ export class TareaFormComponent implements OnInit {
   }
 
   selectedReminderLabel(): string {
-    if (!this.form.controls.recordatorioActivo.value) {
+    if (!this.recordatorioActivoControl.value) {
       return 'Sin recordatorio';
     }
 
-    const value = this.form.controls.recordatorioMinutosAntes.value;
-    return this.reminderOptions.find(option => option.value === value)?.label ?? 'Recordatorio activo';
+    const value = this.recordatorioMinutosAntesControl.value;
+    const label = this.reminderOptions.find(option => option.value === value)?.label ?? 'Recordatorio activo';
+    return `${label} del inicio`;
+  }
+
+  formattedStart(): string {
+    return this.formatLocalDateTime(this.fechaInicioControl.value, 'Sin fecha de inicio');
   }
 
   formattedDeadline(): string {
-    const value = this.form.controls.fechaLimite.value;
-    if (!value) {
-      return 'Sin fecha limite';
+    return this.formatLocalDateTime(this.fechaLimiteControl.value, 'Sin fecha limite');
+  }
+
+  formattedReminderSchedule(): string {
+    if (!this.recordatorioActivoControl.value) {
+      return 'Sin recordatorio';
     }
 
-    const utcValue = this.timezoneService.toUtcIso(value);
-    return this.timezoneService.format(utcValue, {
+    const fechaInicioUtc = this.timezoneService.toUtcIso(this.fechaInicioControl.value);
+    const minutosAntes = this.recordatorioMinutosAntesControl.value;
+
+    if (!fechaInicioUtc || minutosAntes == null) {
+      return 'Define una fecha de inicio para calcular el envio';
+    }
+
+    const fechaEnvio = new Date(fechaInicioUtc);
+    fechaEnvio.setMinutes(fechaEnvio.getMinutes() - minutosAntes);
+
+    return this.timezoneService.format(fechaEnvio.toISOString(), {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  reminderHelperText(): string {
+    if (!this.fechaInicioControl.value) {
+      return 'El recordatorio se calcula siempre antes de la fecha de inicio.';
+    }
+
+    if (!this.recordatorioActivoControl.value) {
+      return 'Activalo si quieres recibir un aviso antes de empezar la tarea.';
+    }
+
+    return `Se enviara el ${this.formattedReminderSchedule()} en tu hora local (${this.currentTimezone}).`;
+  }
+
+  deadlineMinValue(): string | null {
+    const fechaInicio = this.fechaInicioControl.value;
+    if (fechaInicio) {
+      return fechaInicio;
+    }
+
+    return this.isEditing() ? null : this.minDateTime;
+  }
+
+  hasScheduleError(errorKey: string): boolean {
+    return !!this.form.errors?.[errorKey] && (this.form.touched || this.form.dirty);
   }
 
   loadTarea(id: number): void {
@@ -158,6 +247,7 @@ export class TareaFormComponent implements OnInit {
           descripcion: tarea.descripcion ?? '',
           prioridad: tarea.prioridad,
           estado: tarea.estado,
+          fechaInicio: this.timezoneService.fromUtcIsoToLocalInput(tarea.fechaInicio),
           fechaLimite: this.timezoneService.fromUtcIsoToLocalInput(tarea.fechaLimite),
           categoriaId: tarea.categoria?.id ?? null,
           recordatorioActivo: tarea.recordatorioActivo,
@@ -180,14 +270,22 @@ export class TareaFormComponent implements OnInit {
 
     this.loading.set(true);
     const value = this.form.getRawValue();
+    const fechaInicioUtc = this.timezoneService.toUtcIso(value.fechaInicio);
     const fechaLimiteUtc = this.timezoneService.toUtcIso(value.fechaLimite);
-    const recordatorioActivo = !!value.recordatorioActivo && !!fechaLimiteUtc;
+    const recordatorioActivo = !!value.recordatorioActivo && !!fechaInicioUtc;
+
+    if (!fechaInicioUtc) {
+      this.loading.set(false);
+      this.toast.error('Error', 'La fecha de inicio no tiene un formato valido.');
+      return;
+    }
 
     const payload = {
       titulo: value.titulo,
       descripcion: value.descripcion || undefined,
       prioridad: value.prioridad,
       estado: value.estado,
+      fechaInicio: fechaInicioUtc,
       fechaLimite: fechaLimiteUtc,
       categoriaId: value.categoriaId ? +value.categoriaId : undefined,
       recordatorioActivo,
@@ -200,6 +298,7 @@ export class TareaFormComponent implements OnInit {
           titulo: payload.titulo,
           descripcion: payload.descripcion,
           prioridad: payload.prioridad,
+          fechaInicio: payload.fechaInicio,
           fechaLimite: payload.fechaLimite,
           categoriaId: payload.categoriaId,
           recordatorioActivo: payload.recordatorioActivo,
@@ -221,6 +320,21 @@ export class TareaFormComponent implements OnInit {
         const message = err.error?.mensaje ?? 'No hemos podido guardar la tarea.';
         this.toast.error('Error', message);
       }
+    });
+  }
+
+  private formatLocalDateTime(value: string, fallback: string): string {
+    const utcValue = this.timezoneService.toUtcIso(value);
+    if (!utcValue) {
+      return fallback;
+    }
+
+    return this.timezoneService.format(utcValue, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 }

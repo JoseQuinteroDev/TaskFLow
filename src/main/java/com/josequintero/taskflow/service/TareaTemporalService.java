@@ -51,16 +51,39 @@ public class TareaTemporalService {
         return resolveZone(zoneId, fallbackZoneId).getId();
     }
 
+    public Instant parseFechaInicio(String valor, String timezone) {
+        return parseRequiredDateTime(
+                valor,
+                timezone,
+                "La fecha de inicio es obligatoria",
+                "La fecha de inicio debe tener formato ISO con fecha y hora, por ejemplo 2026-04-07T12:00 o 2026-04-07T10:00:00Z"
+        );
+    }
+
     public Instant parseFechaLimite(String valor, String timezone) {
-        return parse(valor, false, timezone);
+        return parseOptionalDateTime(
+                valor,
+                timezone,
+                "La fecha limite debe tener formato ISO con fecha y hora, por ejemplo 2026-04-07T18:00 o 2026-04-07T16:00:00Z"
+        );
     }
 
     public Instant parseFiltroDesde(String valor, String timezone) {
-        return parse(valor, true, timezone);
+        return parseFlexibleDateTime(
+                valor,
+                true,
+                timezone,
+                "La fecha de filtro debe tener formato ISO, por ejemplo 2026-04-07 o 2026-04-07T12:00"
+        );
     }
 
     public Instant parseFiltroHasta(String valor, String timezone) {
-        return parse(valor, false, timezone);
+        return parseFlexibleDateTime(
+                valor,
+                false,
+                timezone,
+                "La fecha de filtro debe tener formato ISO, por ejemplo 2026-04-07 o 2026-04-07T18:00"
+        );
     }
 
     public LocalDateTime toUtcLocalDateTime(Instant instant) {
@@ -81,7 +104,45 @@ public class TareaTemporalService {
         return zonedDateTime.format(formatter);
     }
 
-    private Instant parse(String valor, boolean inicioDelDia, String timezone) {
+    public Instant calcularMomentoRecordatorio(Instant fechaInicio, Integer minutosAntes) {
+        if (fechaInicio == null || minutosAntes == null) {
+            return null;
+        }
+
+        return fechaInicio.minusSeconds((long) minutosAntes * 60);
+    }
+
+    private Instant parseRequiredDateTime(
+            String valor,
+            String timezone,
+            String emptyMessage,
+            String invalidMessage
+    ) {
+        if (!StringUtils.hasText(valor)) {
+            throw new BusinessException(emptyMessage);
+        }
+
+        return parseDateTimeValue(valor, timezone, invalidMessage);
+    }
+
+    private Instant parseOptionalDateTime(
+            String valor,
+            String timezone,
+            String invalidMessage
+    ) {
+        if (!StringUtils.hasText(valor)) {
+            return null;
+        }
+
+        return parseDateTimeValue(valor, timezone, invalidMessage);
+    }
+
+    private Instant parseFlexibleDateTime(
+            String valor,
+            boolean inicioDelDia,
+            String timezone,
+            String invalidMessage
+    ) {
         if (!StringUtils.hasText(valor)) {
             return null;
         }
@@ -89,6 +150,33 @@ public class TareaTemporalService {
         String normalizado = valor.trim();
         ZoneId zoneId = resolveZone(timezone, null);
 
+        Instant exactDateTime = tryParseExactDateTime(normalizado, zoneId);
+        if (exactDateTime != null) {
+            return exactDateTime;
+        }
+
+        try {
+            LocalDate date = LocalDate.parse(normalizado, DATE_ONLY);
+            LocalDateTime localDateTime = inicioDelDia ? date.atStartOfDay() : date.atTime(LocalTime.of(23, 59));
+            return localDateTime.atZone(zoneId).toInstant();
+        } catch (DateTimeParseException ex) {
+            throw new BusinessException(invalidMessage);
+        }
+    }
+
+    private Instant parseDateTimeValue(String valor, String timezone, String invalidMessage) {
+        String normalizado = valor.trim();
+        ZoneId zoneId = resolveZone(timezone, null);
+        Instant parsed = tryParseExactDateTime(normalizado, zoneId);
+
+        if (parsed != null) {
+            return parsed;
+        }
+
+        throw new BusinessException(invalidMessage);
+    }
+
+    private Instant tryParseExactDateTime(String normalizado, ZoneId zoneId) {
         try {
             return Instant.parse(normalizado);
         } catch (DateTimeParseException ignored) {
@@ -113,13 +201,7 @@ public class TareaTemporalService {
         } catch (DateTimeParseException ignored) {
         }
 
-        try {
-            LocalDate date = LocalDate.parse(normalizado, DATE_ONLY);
-            LocalDateTime localDateTime = inicioDelDia ? date.atStartOfDay() : date.atTime(LocalTime.of(23, 59));
-            return localDateTime.atZone(zoneId).toInstant();
-        } catch (DateTimeParseException ex) {
-            throw new BusinessException("La fecha limite debe tener formato ISO, por ejemplo 2026-04-02T18:30 o 2026-04-02T16:30:00Z");
-        }
+        return null;
     }
 
     private ZoneId resolveZone(String zoneId, String fallbackZoneId) {

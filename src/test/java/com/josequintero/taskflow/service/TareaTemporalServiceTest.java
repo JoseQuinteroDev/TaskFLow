@@ -25,8 +25,20 @@ class TareaTemporalServiceTest {
     }
 
     @Test
-    void parseFechaLimiteMapsLegacyDateOnlyToEndOfDay() {
-        Instant result = service.parseFechaLimite("2026-04-04", "Europe/Madrid");
+    void parseFechaInicioAcceptsDateTimeWithMinutes() {
+        Instant result = service.parseFechaInicio("2026-04-04T12:15", "Europe/Madrid");
+
+        assertEquals(Instant.parse("2026-04-04T10:15:00Z"), result);
+    }
+
+    @Test
+    void parseFechaLimiteRejectsDateOnlyBecauseTimeIsRequired() {
+        assertThrows(BusinessException.class, () -> service.parseFechaLimite("2026-04-04", "Europe/Madrid"));
+    }
+
+    @Test
+    void parseFiltroHastaMapsDateOnlyToEndOfDay() {
+        Instant result = service.parseFiltroHasta("2026-04-04", "Europe/Madrid");
 
         assertEquals(Instant.parse("2026-04-04T21:59:00Z"), result);
     }

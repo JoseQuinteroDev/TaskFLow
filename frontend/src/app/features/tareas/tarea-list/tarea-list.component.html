@@ -10,10 +10,11 @@
             <label class="sort-field">
                 <span>Ordenar</span>
                 <select class="form-control" (change)="onSort($event)" [value]="sortField">
-                    <option value="fechaCreacion">Más recientes</option>
-                    <option value="fechaLimite">Fecha límite</option>
+                    <option value="fechaInicio">Inicio</option>
+                    <option value="fechaCreacion">Mas recientes</option>
+                    <option value="fechaLimite">Fecha limite</option>
                     <option value="prioridad">Prioridad</option>
-                    <option value="titulo">Título A-Z</option>
+                    <option value="titulo">Titulo A-Z</option>
                 </select>
             </label>
 
@@ -24,7 +25,7 @@
                         [class.active]="viewMode() === 'grid'"
                         [attr.aria-pressed]="viewMode() === 'grid'"
                         (click)="viewMode.set('grid')"
-                        title="Vista cuadrícula"
+                        title="Vista cuadricula"
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"/>
@@ -112,8 +113,8 @@
 @if (deleteId()) {
     <app-confirm-dialog
             title="Eliminar tarea"
-            message="Vas a borrar esta tarea de forma permanente. Esta acción no se puede deshacer."
-            confirmLabel="Sí, eliminar"
+            message="Vas a borrar esta tarea de forma permanente. Esta accion no se puede deshacer."
+            confirmLabel="Si, eliminar"
             (confirmed)="confirmDelete()"
             (cancelled)="deleteId.set(null)"
     />

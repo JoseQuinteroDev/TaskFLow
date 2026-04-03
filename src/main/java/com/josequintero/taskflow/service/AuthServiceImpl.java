@@ -1,8 +1,10 @@
 package com.josequintero.taskflow.service;
 
 import com.josequintero.taskflow.dto.auth.AuthResponseDto;
+import com.josequintero.taskflow.dto.auth.CurrentUserResponseDto;
 import com.josequintero.taskflow.dto.auth.LoginRequestDto;
 import com.josequintero.taskflow.dto.auth.RegisterRequestDto;
+import com.josequintero.taskflow.dto.auth.UpdateTimezoneRequestDto;
 import com.josequintero.taskflow.exception.BusinessException;
 import com.josequintero.taskflow.model.Rol;
 import com.josequintero.taskflow.model.Usuario;
@@ -30,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final TareaTemporalService tareaTemporalService;
+    private final CurrentUserService currentUserService;
 
     public AuthServiceImpl(
             UsuarioRepository usuarioRepository,
@@ -37,7 +40,8 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService,
-            TareaTemporalService tareaTemporalService
+            TareaTemporalService tareaTemporalService,
+            CurrentUserService currentUserService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -45,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.tareaTemporalService = tareaTemporalService;
+        this.currentUserService = currentUserService;
     }
 
     @Override
@@ -93,10 +98,31 @@ public class AuthServiceImpl implements AuthService {
 
         if (!normalizedTimezone.equals(usuario.getTimezone())) {
             usuario.setTimezone(normalizedTimezone);
+            usuario = usuarioRepository.save(usuario);
         }
 
         String token = jwtService.generateToken(userDetails);
         return buildAuthResponse(usuario, token);
+    }
+
+    @Override
+    public CurrentUserResponseDto currentUser() {
+        Usuario usuario = currentUserService.getCurrentUser();
+        usuario = ensurePersistedTimezone(usuario);
+        return buildCurrentUserResponse(usuario);
+    }
+
+    @Override
+    public CurrentUserResponseDto updateTimezone(UpdateTimezoneRequestDto request) {
+        Usuario usuario = currentUserService.getCurrentUser();
+        String normalizedTimezone = tareaTemporalService.normalizeTimezone(request.getTimezone(), "Europe/Madrid");
+
+        if (!normalizedTimezone.equals(usuario.getTimezone())) {
+            usuario.setTimezone(normalizedTimezone);
+            usuario = usuarioRepository.save(usuario);
+        }
+
+        return buildCurrentUserResponse(usuario);
     }
 
     private AuthResponseDto buildAuthResponse(Usuario usuario, String token) {
@@ -106,14 +132,50 @@ public class AuthServiceImpl implements AuthService {
                 .nombre(usuario.getNombre())
                 .email(usuario.getEmail())
                 .timezone(usuario.getTimezone())
-                .roles(usuario.getRoles()
-                        .stream()
-                        .map(rol -> rol.getNombre().name())
-                        .collect(Collectors.toSet()))
+                .roles(extractRoles(usuario))
                 .build();
+    }
+
+    private CurrentUserResponseDto buildCurrentUserResponse(Usuario usuario) {
+        return CurrentUserResponseDto.builder()
+                .nombre(usuario.getNombre())
+                .email(usuario.getEmail())
+                .timezone(usuario.getTimezone())
+                .roles(extractRoles(usuario))
+                .build();
+    }
+
+    private Set<String> extractRoles(Usuario usuario) {
+        return usuario.getRoles()
+                .stream()
+                .map(rol -> rol.getNombre().name())
+                .collect(Collectors.toSet());
     }
 
     private String normalizeEmail(String email) {
         return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Usuario ensurePersistedTimezone(Usuario usuario) {
+        String sanitizedTimezone = sanitizePersistedTimezone(usuario.getTimezone());
+
+        if (!sanitizedTimezone.equals(usuario.getTimezone())) {
+            usuario.setTimezone(sanitizedTimezone);
+            return usuarioRepository.save(usuario);
+        }
+
+        return usuario;
+    }
+
+    private String sanitizePersistedTimezone(String timezone) {
+        if (timezone == null || timezone.isBlank()) {
+            return tareaTemporalService.normalizeTimezone(null, "Europe/Madrid");
+        }
+
+        try {
+            return tareaTemporalService.normalizeTimezone(timezone, "Europe/Madrid");
+        } catch (BusinessException ex) {
+            return tareaTemporalService.normalizeTimezone(null, "Europe/Madrid");
+        }
     }
 }

@@ -318,6 +318,10 @@ export class AdminPanelComponent implements OnInit {
   }
 
   failureTypeLabel(failure: AdminReminderFailure): string {
+    if (failure.tipo === 'ANTES_DE_INICIO') {
+      return 'Antes del inicio';
+    }
+
     return failure.tipo === 'VENCIDA' ? 'Tarea vencida' : 'Vence pronto';
   }
 

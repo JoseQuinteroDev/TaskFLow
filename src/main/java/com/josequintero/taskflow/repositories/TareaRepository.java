@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaRepositoryCustom {
 
-    List<Tarea> findByUsuarioIdOrderByFechaCreacionDesc(Long usuarioId);
+    List<Tarea> findByUsuarioIdOrderByFechaInicioAscFechaCreacionDesc(Long usuarioId);
 
     Optional<Tarea> findByIdAndUsuarioId(Long id, Long usuarioId);
 
@@ -30,6 +30,8 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
     long countByUsuarioId(Long usuarioId);
 
     long countByUsuarioIdAndEstado(Long usuarioId, EstadoTarea estado);
+
+    long countByEstadoNot(EstadoTarea estado);
 
     @Query("""
            SELECT t
@@ -53,6 +55,15 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
     long contarTareasVencidas(Long usuarioId, Instant referencia);
 
     @Query("""
+           SELECT COUNT(t)
+           FROM Tarea t
+           WHERE t.fechaLimite IS NOT NULL
+             AND t.fechaLimite < :referencia
+             AND t.estado <> com.josequintero.taskflow.model.enums.EstadoTarea.COMPLETADA
+           """)
+    long contarTareasVencidasGlobal(Instant referencia);
+
+    @Query("""
            SELECT t
            FROM Tarea t
            WHERE t.usuario.id = :usuarioId
@@ -73,7 +84,7 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
            """)
     List<Tarea> buscarPorTextoEnTituloYDescripcion(Long usuarioId, String texto);
 
-    List<Tarea> findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+    List<Tarea> findByEstadoNotAndRecordatorioActivoTrueAndFechaInicioBetweenOrderByFechaInicioAsc(
             EstadoTarea estado,
             Instant desde,
             Instant hasta
@@ -88,4 +99,12 @@ public interface TareaRepository extends JpaRepository<Tarea, Long>, TareaReposi
              AND t.categoria.id = :categoriaId
            """)
     int desvincularCategoria(Long usuarioId, Long categoriaId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("""
+           DELETE FROM Tarea t
+           WHERE t.usuario.id = :usuarioId
+           """)
+    int deleteByUsuarioId(Long usuarioId);
 }

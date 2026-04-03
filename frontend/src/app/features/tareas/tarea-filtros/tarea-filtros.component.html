@@ -46,8 +46,8 @@
             </select>
         }
 
-        <input type="datetime-local" class="form-control" formControlName="desde" title="Desde fecha y hora" />
-        <input type="datetime-local" class="form-control" formControlName="hasta" title="Hasta fecha y hora" />
+        <input type="datetime-local" class="form-control" formControlName="inicioDesde" title="Inicio desde" aria-label="Inicio desde" />
+        <input type="datetime-local" class="form-control" formControlName="inicioHasta" title="Inicio hasta" aria-label="Inicio hasta" />
 
         @if (hasActiveFilters()) {
             <button class="btn btn-ghost btn-sm filtros-panel__clear" type="button" (click)="clearFilters()">

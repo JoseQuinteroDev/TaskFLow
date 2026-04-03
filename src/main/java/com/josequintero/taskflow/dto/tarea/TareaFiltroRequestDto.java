@@ -18,7 +18,7 @@ public class TareaFiltroRequestDto {
     private String texto;
     private EstadoTarea estado;
     private PrioridadTarea prioridad;
-    private String desde;
-    private String hasta;
+    private String inicioDesde;
+    private String inicioHasta;
     private Long categoriaId;
 }

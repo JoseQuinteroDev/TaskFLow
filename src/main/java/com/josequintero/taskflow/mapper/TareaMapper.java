@@ -25,6 +25,7 @@ public class TareaMapper {
 
     public Tarea toEntity(
             TareaCreateRequestDto dto,
+            Instant fechaInicio,
             Instant fechaLimite,
             Usuario usuario,
             Categoria categoria
@@ -37,6 +38,7 @@ public class TareaMapper {
                 .titulo(dto.getTitulo().trim())
                 .descripcion(dto.getDescripcion() == null ? null : dto.getDescripcion().trim())
                 .prioridad(dto.getPrioridad())
+                .fechaInicio(fechaInicio)
                 .fechaLimite(fechaLimite)
                 .recordatorioActivo(Boolean.TRUE.equals(dto.getRecordatorioActivo()))
                 .recordatorioMinutosAntes(Boolean.TRUE.equals(dto.getRecordatorioActivo()) ? dto.getRecordatorioMinutosAntes() : null)
@@ -57,6 +59,7 @@ public class TareaMapper {
                 .descripcion(tarea.getDescripcion())
                 .prioridad(tarea.getPrioridad())
                 .estado(tarea.getEstado())
+                .fechaInicio(tarea.getFechaInicio())
                 .fechaLimite(tarea.getFechaLimite())
                 .vencida(tarea.estaVencida(tareaTemporalService.ahora()))
                 .completada(tarea.estaCompletada())
@@ -71,6 +74,7 @@ public class TareaMapper {
     public void updateEntity(
             Tarea tarea,
             TareaUpdateRequestDto dto,
+            Instant fechaInicio,
             Instant fechaLimite,
             Categoria categoria
     ) {
@@ -82,6 +86,7 @@ public class TareaMapper {
         tarea.setDescripcion(dto.getDescripcion() == null ? null : dto.getDescripcion().trim());
         tarea.setPrioridad(dto.getPrioridad());
         tarea.setEstado(dto.getEstado());
+        tarea.setFechaInicio(fechaInicio);
         tarea.setFechaLimite(fechaLimite);
         tarea.setRecordatorioActivo(Boolean.TRUE.equals(dto.getRecordatorioActivo()));
         tarea.setRecordatorioMinutosAntes(Boolean.TRUE.equals(dto.getRecordatorioActivo()) ? dto.getRecordatorioMinutosAntes() : null);

@@ -16,7 +16,7 @@ import { TareaCardComponent } from '../tarea-card/tarea-card.component';
 import { TareaFiltrosComponent } from '../tarea-filtros/tarea-filtros.component';
 
 type ViewMode = 'grid' | 'list';
-type SortField = 'fechaCreacion' | 'fechaLimite' | 'prioridad' | 'titulo';
+type SortField = 'fechaInicio' | 'fechaLimite' | 'fechaCreacion' | 'prioridad' | 'titulo';
 
 @Component({
   selector: 'app-tarea-list',
@@ -45,7 +45,7 @@ export class TareaListComponent implements OnInit {
   deleteId = signal<number | null>(null);
 
   private filtros: TareaFiltros = {};
-  sortField: SortField = 'fechaCreacion';
+  sortField: SortField = 'fechaInicio';
 
   estadoTabs = [
     { value: 'TODAS' as const, label: 'Todas' },
@@ -165,18 +165,20 @@ export class TareaListComponent implements OnInit {
   }
 
   emptyTitle(): string {
-    return Object.keys(this.filtros).length ? 'No hay resultados para estos filtros' : 'Aún no has creado tareas';
+    return Object.keys(this.filtros).length ? 'No hay resultados para estos filtros' : 'Aun no has creado tareas';
   }
 
   emptyDesc(): string {
     return Object.keys(this.filtros).length
-      ? 'Prueba a ampliar la búsqueda o ajustar los filtros activos.'
+      ? 'Prueba a ampliar la busqueda o ajustar los filtros activos.'
       : 'Crea la primera tarea para empezar a organizar el trabajo.';
   }
 
   private sort(list: TareaResponse[]): TareaResponse[] {
     return list.sort((a, b) => {
       switch (this.sortField) {
+        case 'fechaInicio':
+          return a.fechaInicio.localeCompare(b.fechaInicio);
         case 'fechaLimite':
           if (!a.fechaLimite) return 1;
           if (!b.fechaLimite) return -1;

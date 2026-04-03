@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -53,38 +54,37 @@ public class RecordatorioTareaService {
 
         Instant ahora = tareaTemporalService.ahora();
         Instant ventanaInicio = ahora.minus(reminderProperties.getOverdueWindow());
-        Instant ventanaFin = ahora.plus(reminderProperties.getSoonThreshold());
+        Instant ventanaFin = ahora.plus(resolveReminderLookahead());
 
-        List<Tarea> tareas = tareaRepository.findByEstadoNotAndRecordatorioActivoTrueAndFechaLimiteBetweenOrderByFechaLimiteAsc(
+        List<Tarea> tareas = tareaRepository.findByEstadoNotAndRecordatorioActivoTrueAndFechaInicioBetweenOrderByFechaInicioAsc(
                 EstadoTarea.COMPLETADA,
                 ventanaInicio,
                 ventanaFin
         );
 
         for (Tarea tarea : tareas) {
-            if (tarea.getFechaLimite() == null
+            if (tarea.getFechaInicio() == null
                     || !Boolean.TRUE.equals(tarea.getUsuario().getActivo())
                     || !tarea.tieneRecordatorioActivo()) {
                 continue;
             }
 
-            if (!tarea.getFechaLimite().isAfter(ahora)) {
-                if (!tarea.getFechaLimite().isBefore(ahora.minus(reminderProperties.getOverdueWindow()))) {
-                    enviarSiCorresponde(tarea, TipoRecordatorioTarea.VENCIDA, ahora);
-                }
+            Instant fechaDisparo = tareaTemporalService.calcularMomentoRecordatorio(
+                    tarea.getFechaInicio(),
+                    tarea.getRecordatorioMinutosAntes()
+            );
+            Instant limiteTolerancia = tarea.getFechaInicio().plus(reminderProperties.getOverdueWindow());
+
+            if (fechaDisparo == null || ahora.isBefore(fechaDisparo) || ahora.isAfter(limiteTolerancia)) {
                 continue;
             }
 
-            Instant fechaDisparo = tarea.getFechaLimite()
-                    .minus(tarea.getRecordatorioMinutosAntes(), ChronoUnit.MINUTES);
-
-            if (!ahora.isBefore(fechaDisparo)) {
-                enviarSiCorresponde(tarea, TipoRecordatorioTarea.PROXIMO_VENCIMIENTO, ahora);
-            }
+            enviarSiCorresponde(tarea, TipoRecordatorioTarea.ANTES_DE_INICIO, ahora);
         }
     }
 
     private void enviarSiCorresponde(Tarea tarea, TipoRecordatorioTarea tipo, Instant ahora) {
+        LocalDateTime fechaProgramada = tareaTemporalService.toUtcLocalDateTime(resolveScheduledAt(tarea, tipo));
         RecordatorioTarea recordatorio = recordatorioTareaRepository
                 .findByTareaIdAndTipoAndCanal(tarea.getId(), tipo, CanalNotificacion.EMAIL)
                 .orElseGet(() -> RecordatorioTarea.builder()
@@ -92,14 +92,14 @@ public class RecordatorioTareaService {
                         .tipo(tipo)
                         .canal(CanalNotificacion.EMAIL)
                         .destinatario(tarea.getUsuario().getEmail())
-                        .fechaProgramada(tareaTemporalService.toUtcLocalDateTime(ahora))
+                        .fechaProgramada(fechaProgramada)
                         .build());
 
         if (recordatorio.getEstado() == EstadoEnvioNotificacion.ENVIADO) {
             return;
         }
 
-        recordatorio.setFechaProgramada(tareaTemporalService.toUtcLocalDateTime(ahora));
+        recordatorio.setFechaProgramada(fechaProgramada);
         recordatorio.setDestinatario(tarea.getUsuario().getEmail());
 
         try {
@@ -116,33 +116,56 @@ public class RecordatorioTareaService {
         recordatorioTareaRepository.save(recordatorio);
     }
 
-    private EmailMessage buildMessage(Tarea tarea, TipoRecordatorioTarea tipo) {
-        String fechaLimite = tareaTemporalService.formatForEmail(tarea.getFechaLimite(), tarea.getUsuario().getTimezone());
-        String subject = switch (tipo) {
-            case PROXIMO_VENCIMIENTO -> "TaskFlow | Tu tarea vence pronto";
-            case VENCIDA -> "TaskFlow | Tienes una tarea vencida";
-        };
+    private Duration resolveReminderLookahead() {
+        Duration configuredThreshold = reminderProperties.getSoonThreshold();
+        Duration maxLeadTime = RecordatorioTareaRules.maxLeadTime();
 
-        String intro = switch (tipo) {
-            case PROXIMO_VENCIMIENTO -> "Te avisamos de que esta tarea esta cerca de su vencimiento.";
-            case VENCIDA -> "Esta tarea ya ha superado su fecha limite y necesita atencion.";
-        };
+        return configuredThreshold.compareTo(maxLeadTime) >= 0 ? configuredThreshold : maxLeadTime;
+    }
+
+    private Instant resolveScheduledAt(Tarea tarea, TipoRecordatorioTarea tipo) {
+        if (tarea.getFechaInicio() == null) {
+            return null;
+        }
+
+        if (tipo == TipoRecordatorioTarea.ANTES_DE_INICIO) {
+            return tareaTemporalService.calcularMomentoRecordatorio(tarea.getFechaInicio(), tarea.getRecordatorioMinutosAntes());
+        }
+
+        return tarea.getFechaInicio();
+    }
+
+    private EmailMessage buildMessage(Tarea tarea, TipoRecordatorioTarea tipo) {
+        String fechaInicio = tareaTemporalService.formatForEmail(tarea.getFechaInicio(), tarea.getUsuario().getTimezone());
+        String fechaLimite = tarea.getFechaLimite() == null
+                ? "Sin fecha limite"
+                : tareaTemporalService.formatForEmail(tarea.getFechaLimite(), tarea.getUsuario().getTimezone());
+        String fechaRecordatorio = tareaTemporalService.formatForEmail(
+                resolveScheduledAt(tarea, tipo),
+                tarea.getUsuario().getTimezone()
+        );
+        String subject = "TaskFlow | Tu tarea empieza pronto";
+        String intro = "Te recordamos que esta tarea tiene una fecha de inicio cercana.";
 
         String textBody = """
                 %s
 
                 Tarea: %s
                 Prioridad: %s
+                Fecha de inicio: %s
                 Fecha limite: %s
                 Recordatorio: %s minutos antes
+                Aviso programado para: %s
 
                 Revisa TaskFlow para actualizar su estado o ajustar la planificacion.
                 """.formatted(
                 intro,
                 tarea.getTitulo(),
                 tarea.getPrioridad().name(),
+                fechaInicio,
                 fechaLimite,
-                tarea.getRecordatorioMinutosAntes()
+                tarea.getRecordatorioMinutosAntes(),
+                fechaRecordatorio
         );
 
         String htmlBody = """
@@ -157,10 +180,14 @@ public class RecordatorioTareaService {
                         <p style="margin:0 0 16px;font-size:18px;color:#f4f7fb;font-weight:700;">%s</p>
                         <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Prioridad</p>
                         <p style="margin:0 0 16px;color:#f4f7fb;">%s</p>
-                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha limite</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha de inicio</p>
                         <p style="margin:0 0 16px;color:#87f3b0;font-weight:700;">%s</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Fecha limite</p>
+                        <p style="margin:0 0 16px;color:#f4f7fb;">%s</p>
                         <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Recordatorio</p>
-                        <p style="margin:0;color:#f4f7fb;">%s minutos antes</p>
+                        <p style="margin:0 0 16px;color:#f4f7fb;">%s minutos antes</p>
+                        <p style="margin:0 0 8px;color:#92a0b8;font-size:12px;text-transform:uppercase;">Aviso programado</p>
+                        <p style="margin:0;color:#f4f7fb;">%s</p>
                       </div>
                     </div>
                   </body>
@@ -170,8 +197,10 @@ public class RecordatorioTareaService {
                 intro,
                 tarea.getTitulo(),
                 tarea.getPrioridad().name(),
+                fechaInicio,
                 fechaLimite,
-                tarea.getRecordatorioMinutosAntes()
+                tarea.getRecordatorioMinutosAntes(),
+                fechaRecordatorio
         );
 
         return new EmailMessage(tarea.getUsuario().getEmail(), subject, textBody, htmlBody);

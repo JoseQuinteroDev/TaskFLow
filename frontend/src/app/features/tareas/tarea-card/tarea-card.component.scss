@@ -157,6 +157,12 @@
   background: var(--blue-soft);
 }
 
+.meta-chip--info {
+  color: var(--text-strong);
+  background: rgba(125, 183, 255, 0.08);
+  border-color: rgba(125, 183, 255, 0.14);
+}
+
 .meta-chip--danger {
   color: var(--red);
   background: var(--red-soft);

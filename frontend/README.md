@@ -1,8 +1,18 @@
 # Frontend De TaskFlow
 
-Frontend Angular de TaskFlow, una aplicación de gestión de tareas con estética premium, construida con standalone components, SCSS y soporte SSR.
+Frontend Angular de TaskFlow, una aplicacion de gestion de tareas con enfoque SaaS, construida con standalone components, TypeScript, SCSS y soporte SSR.
 
-Este workspace se encarga del shell autenticado, el dashboard, los flujos de tareas, la gestión de categorías y la experiencia admin. Está diseñado para sentirse como una interfaz SaaS real: oscura, minimalista, consistente y con nivel portfolio.
+Este workspace se encarga de la experiencia de usuario completa: autenticacion, shell principal, dashboard, tareas, categorias, area admin y tratamiento coherente de fechas, horas y zona horaria.
+
+## Objetivo Del Frontend
+
+La interfaz esta planteada para transmitir una sensacion de producto real:
+
+- visual oscuro y sobrio
+- jerarquia clara
+- componentes consistentes
+- UX limpia para tareas, formularios y administracion
+- acabado adecuado para portfolio
 
 ## Stack
 
@@ -11,53 +21,19 @@ Este workspace se encarga del shell autenticado, el dashboard, los flujos de tar
 - SCSS
 - Angular SSR
 - RxJS
-- Arquitectura Angular standalone
+- Arquitectura standalone
 
-## Responsabilidades Del Frontend
+## Responsabilidades Principales
 
-- Flujos de autenticación (`login`, `register`, rehidratación de sesión)
-- Shell principal de la aplicación y navegación
-- Dashboard con resumen de tareas y trabajo reciente
-- CRUD de tareas, filtros, estados de prioridad y configuración de recordatorios
-- Gestión de categorías
-- Panel admin para usuarios, métricas y fallos de recordatorios
-- Detección de zona horaria y conversión de fechas límite
-
-## Desarrollo
-
-### Requisitos
-
-- Node.js 20+ recomendado
-- npm
-- Backend de TaskFlow ejecutándose en `http://localhost:8080`
-
-### Instalar dependencias
-
-```bash
-npm install
-```
-
-### Iniciar servidor de desarrollo
-
-```bash
-npm start
-```
-
-La aplicación queda disponible en:
-
-```text
-http://localhost:4200
-```
-
-## Scripts Disponibles
-
-| Comando | Propósito |
-| --- | --- |
-| `npm start` | Arranca el servidor de desarrollo de Angular |
-| `npm run build` | Build de producción |
-| `npm run watch` | Build en modo watch |
-| `npm test` | Ejecuta tests con Karma |
-| `npm run serve:ssr:frontend` | Sirve el build SSR desde `dist/frontend` |
+- login, registro y rehidratacion de sesion
+- shell autenticado con sidebar y topbar
+- dashboard del usuario
+- CRUD de tareas
+- gestion de categorias
+- panel admin
+- toasts, confirmaciones y estados vacios
+- deteccion de timezone del navegador
+- conversion entre hora local del usuario y UTC para backend
 
 ## Arquitectura
 
@@ -82,116 +58,139 @@ src/app/
 
 ### Core
 
-- `models`: contratos tipados de la API
-- `services`: acceso a API y orquestación del lado cliente
-- `guards`: protección de rutas autenticadas y admin
-- `interceptors`: inserción automática del JWT en requests autenticadas
+- `models`: contratos tipados con la API
+- `services`: acceso a backend y logica cliente
+- `guards`: proteccion de rutas autenticadas y admin
+- `interceptors`: inyeccion automatica del JWT
 
 ### Features
 
-- `auth`: pantallas de login y registro
-- `dashboard`: vista resumen del usuario actual
-- `tareas`: listado, filtros, cards y formularios de tareas
-- `categorias`: CRUD de categorías
-- `admin`: panel de administración con ciclo de vida de usuarios y monitorización
+- `auth`: login y registro
+- `dashboard`: resumen del espacio de trabajo
+- `tareas`: listado, filtros, cards y formulario
+- `categorias`: organizacion de tareas
+- `admin`: gestion de usuarios, metricas y recordatorios fallidos
 
 ### Layout
 
-- `main-layout`: shell autenticado con sidebar, topbar, cuenta y navegación adaptada a admin
+- `main-layout`: shell principal autenticado con navegacion sensible al rol
 
 ### Shared
 
-- componentes reutilizables para loading, empty states, confirm dialogs, toasts y not-found
+- componentes reutilizables para loading, empty states, dialogos de confirmacion, notificaciones y rutas no encontradas
 
-## Routing
+## Sesion Y Seguridad En Frontend
 
-Rutas principales definidas en `src/app/app.routes.ts`:
-
-- `/login`
-- `/register`
-- `/dashboard`
-- `/tareas`
-- `/tareas/nueva`
-- `/tareas/editar/:id`
-- `/categorias`
-- `/admin`
-
-Guards:
-
-- `guestGuard`: bloquea pantallas de auth si ya hay sesión iniciada
-- `authGuard`: protege el shell autenticado
-- `adminGuard`: restringe `/admin` a `ROLE_ADMIN`
-
-Las rutas SSR se definen en `src/app/app.routes.server.ts`.
-
-## Estado Y Flujo De Datos
-
-TaskFlow mantiene el estado cliente deliberadamente simple:
-
-- Angular signals para estado local de vista
-- servicios para llamadas a API y gestión de sesión
-- modelos tipados de request y response
-- sin librería externa de estado global
-
-Esto hace que el proyecto sea más legible en contexto portfolio sin renunciar a un enfoque serio.
-
-## Modelo De Auth Y Sesión
-
-`AuthService` es la fuente de verdad de la sesión actual.
+`AuthService` es la fuente de verdad de la sesion actual.
 
 Se encarga de:
 
-- guardar la sesión JWT en local storage
-- exponer señales de autenticación y roles
-- rehidratar sesiones antiguas al arrancar la app mediante `/api/auth/me`
-- exponer nombre, email, zona horaria y roles del usuario actual
+- guardar la sesion en local storage
+- exponer el usuario autenticado
+- rehidratar sesiones previas
+- mantener nombre, email, timezone y roles
+- permitir que guards y layout reaccionen al rol actual
 
-El interceptor HTTP añade el JWT a los requests salientes de forma automática.
+Guards principales:
 
-## Estrategia De Zona Horaria
+- `guestGuard`
+- `authGuard`
+- `adminGuard`
 
-El frontend usa `TimezoneService` para mantener consistente el tratamiento de fechas límite:
+## Fechas, Horas Y Zona Horaria
 
-- detectar la zona horaria del navegador
-- convertir valores locales de `datetime-local` a ISO UTC antes de enviarlos al backend
-- convertir valores UTC devueltos por la API a formato local para edición
-- formatear fechas UTC en cards, previews y vistas admin
+La aplicacion trabaja con una estrategia clara:
 
-Esto encaja con la estrategia del backend, donde las fechas límite se almacenan en UTC y se interpretan en el contexto horario del usuario.
+- el usuario introduce fecha y hora en su contexto local
+- el frontend detecta la timezone del navegador
+- `TimezoneService` transforma los valores de `datetime-local` a UTC antes de enviarlos
+- los valores UTC recibidos del backend se vuelven a presentar en hora local para edicion y visualizacion
 
-## Design System
+Esto evita inconsistencias entre navegador, backend y base de datos.
 
-El design system está centralizado en `src/styles.scss`.
+## Semantica Actual De Tareas
 
-Define:
+El frontend esta alineado con una logica funcional clara:
 
-- paleta oscura de superficies
-- tokens tipográficos
-- escala de spacing
-- tokens de bordes y sombras
-- base de botones, formularios, badges y cards
-- utilidades reutilizables para layout y estados de feedback
+- `fechaInicio`: cuando deberia empezar la tarea
+- `fechaLimite`: cuando deberia terminar como maximo
+- `recordatorio`: aviso previo calculado respecto a la fecha de inicio
 
-El objetivo es mantener coherencia entre dashboard, flujos de tareas y herramientas admin sin depender de una librería visual externa.
+La UI intenta dejar esto evidente en:
+
+- formulario de creacion y edicion
+- cards de tareas
+- dashboard
+- filtros y listados
 
 ## Experiencia Admin
 
-La UI admin forma parte del shell principal del producto, no es una pantalla desconectada.
+Los usuarios con rol admin ven una zona adicional integrada en el shell:
 
-Comportamientos clave:
+- acceso visible desde navegacion principal
+- resumen global del sistema
+- listado de usuarios con filtros
+- acciones de activacion, desactivacion y rol
+- creacion de usuarios
+- visualizacion de fallos recientes de recordatorios
 
-- entrada admin en el sidebar visible solo para administradores
-- contexto visual específico en la topbar
-- cards de resumen global
-- listado de usuarios con filtros y consumo de API preparado para paginación
-- acciones de activación de cuenta y cambio de rol admin
-- confirmación antes de eliminación
-- monitorización de fallos recientes de recordatorios
-- autoprotección en la UI frente a acciones peligrosas sobre la cuenta admin actual
+La interfaz admin mantiene el mismo sistema visual del resto del producto y no se presenta como una pantalla desconectada.
 
-## Integración Con El Backend
+## Design System
 
-Este frontend espera el backend en:
+El design system base vive en `src/styles.scss`.
+
+Incluye:
+
+- tokens de color
+- superficies oscuras
+- espaciado consistente
+- radios y sombras
+- estilos base de botones
+- inputs, selects y estados focus
+- badges, cards y paneles reutilizables
+
+El objetivo es mantener coherencia visual entre todos los flujos sin depender de una libreria de componentes externa.
+
+## Desarrollo Local
+
+### Requisitos
+
+- Node.js 20 o superior recomendado
+- npm
+- backend de TaskFlow disponible en `http://localhost:8080`
+
+### Instalar Dependencias
+
+```bash
+npm install
+```
+
+### Iniciar Desarrollo
+
+```bash
+npm start
+```
+
+Aplicacion disponible en:
+
+```text
+http://localhost:4200
+```
+
+## Scripts
+
+| Comando | Uso |
+| --- | --- |
+| `npm start` | Servidor de desarrollo |
+| `npm run build` | Build de produccion |
+| `npm run watch` | Build en modo observacion |
+| `npm test` | Tests de frontend |
+| `npm run serve:ssr:frontend` | Servir build SSR |
+
+## Integracion Con El Backend
+
+El frontend consume el backend de TaskFlow en:
 
 ```text
 http://localhost:8080
@@ -206,37 +205,24 @@ Servicios principales:
 - `TimezoneService`
 - `ToastService`
 
-## Resultado Del Build
+## Notas Sobre Recordatorios
 
-Los builds de producción se generan en:
+El frontend soporta:
 
-```text
-dist/frontend
-```
+- activar o desactivar recordatorio
+- elegir minutos antes del inicio
+- visualizar cuando se enviara el aviso
 
-Este workspace usa el application builder de Angular con salida SSR habilitada.
+El envio real del correo depende del backend y de la configuracion del proveedor de email. En local, lo normal es trabajar con proveedor `log` y usar SendGrid solo cuando exista remitente verificado.
 
-## Verificaciones De Calidad
-
-Ejecutar build de producción:
+## Verificaciones
 
 ```bash
 npm run build
-```
-
-Ejecutar tests de frontend:
-
-```bash
 npm test
 ```
 
-## Notas Para Contribuir
+## Documentacion Relacionada
 
-- Prioriza actualizar tokens compartidos en `src/styles.scss` antes que añadir reglas visuales aisladas
-- Reutiliza `core/models` y `core/services` antes de crear contratos locales por feature
-- Mantén los flujos admin detrás de guards y UI sensible al rol
-- Conserva el flujo de conversión de zona horaria al tocar pantallas relacionadas con fechas límite
+- [README raiz del proyecto](../README.md)
 
-## Documentación Relacionada
-
-- [README raíz del proyecto](../README.md)

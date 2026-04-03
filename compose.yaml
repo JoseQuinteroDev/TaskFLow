@@ -38,8 +38,10 @@ services:
       JWT_SECRET: VGFza0Zsb3dEZXZTYWZlU2VjcmV0S2V5Rm9ySldUMTIzNDU2Nzg5MEFCQ0RFRg==
       JWT_EXPIRATION: 86400000
       EMAIL_PROVIDER: log
-      EMAIL_FROM: noreply@taskflow.local
-      SENDGRID_API_KEY:
+      # To enable real email later, provide values like:
+      # EMAIL_PROVIDER: sendgrid
+      # EMAIL_FROM: noreply@tu-dominio.com
+      # SENDGRID_API_KEY: SG.xxxxx
       TASK_REMINDERS_ENABLED: true
       TASK_REMINDERS_CRON: "0 */15 * * * *"
       TASK_REMINDERS_SOON_THRESHOLD: PT24H

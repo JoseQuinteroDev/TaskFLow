@@ -25,8 +25,8 @@ export class TareaFiltrosComponent implements OnInit {
     estado: ['' as EstadoTarea | ''],
     prioridad: ['' as PrioridadTarea | ''],
     categoriaId: ['' as number | ''],
-    desde: [''],
-    hasta: [''],
+    inicioDesde: [''],
+    inicioHasta: [''],
   });
 
   ngOnInit(): void {
@@ -42,7 +42,7 @@ export class TareaFiltrosComponent implements OnInit {
 
   hasActiveFilters(): boolean {
     const v = this.form.value;
-    return !!(v.texto || v.estado || v.prioridad || v.categoriaId || v.desde || v.hasta);
+    return !!(v.texto || v.estado || v.prioridad || v.categoriaId || v.inicioDesde || v.inicioHasta);
   }
 
   clearFilters(): void {
@@ -51,8 +51,8 @@ export class TareaFiltrosComponent implements OnInit {
       estado: '',
       prioridad: '',
       categoriaId: '',
-      desde: '',
-      hasta: ''
+      inicioDesde: '',
+      inicioHasta: ''
     });
   }
 
@@ -64,8 +64,8 @@ export class TareaFiltrosComponent implements OnInit {
     if (v.estado) filtros.estado = v.estado as EstadoTarea;
     if (v.prioridad) filtros.prioridad = v.prioridad as PrioridadTarea;
     if (v.categoriaId) filtros.categoriaId = +v.categoriaId;
-    if (v.desde) filtros.desde = this.timezoneService.toUtcIso(v.desde);
-    if (v.hasta) filtros.hasta = this.timezoneService.toUtcIso(v.hasta);
+    if (v.inicioDesde) filtros.inicioDesde = this.timezoneService.toUtcIso(v.inicioDesde);
+    if (v.inicioHasta) filtros.inicioHasta = this.timezoneService.toUtcIso(v.inicioHasta);
 
     this.filtrosChange.emit(filtros);
   }
