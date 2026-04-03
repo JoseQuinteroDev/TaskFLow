@@ -1,60 +1,60 @@
 # TaskFlow
 
-TaskFlow es una aplicacion full stack de gestion de tareas construida con Angular y Spring Boot, pensada para sentirse como un producto SaaS real y no como una demo CRUD academica.
+TaskFlow es una aplicación de gestión de tareas de pila completa construida con Angular y Spring Boot, pensada para sentirse como un producto SaaS real y no como una demo CRUD académica.
 
-El proyecto combina una interfaz oscura, limpia y moderna con una arquitectura backend por capas, autenticacion JWT, gestion de usuarios por roles, fechas con zona horaria real, recordatorios preparados para email y un panel de administracion util y mantenible.
+El proyecto combina una interfaz oscura, limpia y moderna con una arquitectura backend por capas, autenticación JWT, gestión de usuarios por roles, fechas con zona horaria real, recordatorios preparados para correo electrónico y un panel de administración útil y mantenible.
 
-## Vision Del Proyecto
+## Visión Del Proyecto
 
-El objetivo de TaskFlow no era solo "hacer una app de tareas", sino construir un producto pequeno pero serio, con decisiones tecnicas razonables y una experiencia de usuario que se vea profesional en portfolio.
+El objetivo de TaskFlow no era solo "crear una app de tareas", sino construir un producto pequeño pero serio, con decisiones técnicas razonables y una experiencia de usuario que se vea profesional en portfolio.
 
-La aplicacion esta orientada a resolver un flujo de trabajo claro:
+La aplicación está orientada a resolver un flujo de trabajo claro:
 
 - crear tareas con una fecha de inicio real
-- definir opcionalmente una fecha limite
+- definir opcionalmente una fecha límite
 - configurar un recordatorio antes del inicio
-- organizar el trabajo por categorias y prioridades
-- disponer de una zona de administracion para gestionar usuarios y monitorizar el sistema
+- organizar el trabajo por categorías y prioridades
+- disponer de una zona de administración para gestionar usuarios y monitorizar el sistema
 
-## Que Incluye El Proyecto
+## Qué Incluye El Proyecto
 
 ### Funcionalidad Para Usuario
 
-- Registro y login con JWT
-- Dashboard con resumen de actividad
+- Registro e inicio de sesión con JWT
+- Panel principal con resumen de actividad
 - CRUD completo de tareas
 - Fecha de inicio con fecha y hora
-- Fecha limite opcional con fecha y hora
+- Fecha límite opcional con fecha y hora
 - Recordatorio antes del inicio de la tarea
 - Prioridades y estados de tarea
-- Categorias personalizadas
-- Zona horaria del usuario detectada desde frontend
+- Categorías personalizadas
+- Zona horaria del usuario detectada desde el frontend
 
-### Funcionalidad Para Administracion
+### Funcionalidad Para Administración
 
-- Panel admin protegido por rol
+- Panel de administración protegido por rol
 - Listado de usuarios con filtros
-- Alta de usuarios desde panel
-- Activacion y desactivacion de cuentas
-- Promocion y retirada de rol admin
-- Eliminacion segura de usuarios
-- Resumen global de plataforma
+- Alta de usuarios desde el panel
+- Activación y desactivación de cuentas
+- Promoción y retirada del rol de administrador
+- Eliminación segura de usuarios
+- Resumen global de la plataforma
 - Consulta de fallos recientes de recordatorios
 
 ## Principales Decisiones De Producto
 
 ### 1. Fechas Con Sentido Real
 
-TaskFlow ya no trabaja con una unica fecha ambigua.
+TaskFlow ya no trabaja con una única fecha ambigua.
 
 Cada tarea puede tener:
 
-- `fechaInicio`: momento en el que deberia empezar a realizarse la tarea
-- `fechaLimite`: momento maximo en el que deberia quedar terminada
+- `fechaInicio`: momento en el que debería empezar a realizarse la tarea
+- `fechaLimite`: momento máximo en el que debería quedar terminada
 
-Esto permite una experiencia mas realista:
+Esto permite una experiencia más realista:
 
-- una tarea puede tener inicio y no tener limite
+- una tarea puede tener inicio y no tener límite
 - una tarea no puede vencer antes de empezar
 - un recordatorio tiene un punto de referencia claro
 
@@ -66,109 +66,109 @@ Ejemplo:
 
 - inicio: `07/04/2026 12:00`
 - recordatorio: `60 minutos antes`
-- envio esperado: `07/04/2026 11:00`
+- envío esperado: `07/04/2026 11:00`
 
-Esto hace que la funcionalidad tenga sentido para el usuario y simplifica la logica de negocio.
+Esto hace que la funcionalidad tenga sentido para el usuario y simplifica la lógica de negocio.
 
 ### 3. Zona Horaria Real Del Usuario
 
-El frontend detecta la zona horaria del navegador y la sincroniza con backend.
+El frontend detecta la zona horaria del navegador y la sincroniza con el backend.
 
 La estrategia seguida es:
 
 - el usuario trabaja en su hora local
 - el frontend convierte a UTC antes de enviar
 - el backend persiste los instantes en UTC
-- el backend guarda tambien la timezone IANA del usuario
-- la aplicacion vuelve a presentar las fechas en el contexto horario correcto del usuario
+- el backend guarda también la zona horaria IANA del usuario
+- la aplicación vuelve a presentar las fechas en el contexto horario correcto del usuario
 
 Con esto se evita depender de la hora del servidor y se reducen errores por cambios horarios o conversiones inconsistentes.
 
 ## Recordatorios Por Email
 
-TaskFlow ya incluye la base tecnica para enviar recordatorios reales por email, pero conviene distinguir muy bien entre "infraestructura preparada" y "entorno listo para produccion".
+TaskFlow ya incluye la base técnica para enviar recordatorios reales por email, pero conviene distinguir muy bien entre "infraestructura preparada" y "entorno listo para producción".
 
 ### Lo Que Ya Hace El Proyecto
 
-- scheduler de recordatorios en backend
-- logica de negocio para detectar tareas que requieren aviso
+- programador de recordatorios en backend
+- lógica de negocio para detectar tareas que requieren aviso
 - persistencia del estado del recordatorio
 - registro de fallos
-- abstraccion del proveedor de email mediante `EmailSender`
-- implementacion preparada para SendGrid
+- abstracción del proveedor de email mediante `EmailSender`
+- implementación preparada para SendGrid
 
-### Lo Que Hace Falta Para Envio Real
+### Lo Que Hace Falta Para El Envío Real
 
 Para mandar emails reales hace falta:
 
 - un proveedor configurado, por ejemplo SendGrid
-- una API key valida
+- una API key válida
 - un remitente verificado
 - idealmente un dominio propio autenticado
-- un backend ejecutandose de forma continua
+- un backend ejecutándose de forma continua
 
 ### Estado Actual Recomendado En El Repositorio
 
 El repositorio queda preparado para:
 
 - desarrollo local con proveedor `log`
-- pruebas funcionales de la logica de recordatorios
-- futura activacion de proveedor real cuando exista dominio o remitente verificado
+- pruebas funcionales de la lógica de recordatorios
+- futura activación de un proveedor real cuando exista un remitente o dominio verificado
 
 No se dejan credenciales reales dentro del repositorio.
 
-### Nota Importante Sobre Produccion
+### Nota Importante Sobre Producción
 
-Aunque el proyecto soporta el envio real de recordatorios, para una operacion seria hace falta un backend siempre encendido. Si el backend esta apagado, el scheduler no se ejecuta y por tanto no se enviaran recordatorios.
+Aunque el proyecto soporta el envío real de recordatorios, para una operación seria hace falta un backend siempre encendido. Si el backend está apagado, el programador no se ejecuta y, por tanto, no se enviarán recordatorios.
 
 En otras palabras:
 
-- en local funciona mientras el backend esta levantado
+- en local funciona mientras el backend está levantado
 - para una demo continua o un uso real hace falta desplegarlo en un entorno siempre activo
 
-## Stack Tecnologico
+## Stack Tecnológico
 
-| Capa | Tecnologia |
+| Capa | Tecnología |
 | --- | --- |
 | Frontend | Angular 19, TypeScript, SCSS, Angular SSR |
 | Backend | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway |
 | Base de datos | MySQL 8 |
 | Auth | JWT |
-| Email | Abstraccion de proveedor, `log` para desarrollo y base preparada para SendGrid |
-| Tooling | Maven Wrapper, Docker Compose, npm |
+| Correo electrónico | Abstracción de proveedor, `log` para desarrollo y base preparada para SendGrid |
+| Herramientas | Maven Wrapper, Docker Compose y npm |
 
 ## Arquitectura
 
 ### Backend
 
-El backend sigue una arquitectura clasica por capas:
+El backend sigue una arquitectura clásica por capas:
 
 - `controller`: endpoints REST
-- `service`: logica de negocio y orquestacion
+- `service`: lógica de negocio y orquestación
 - `repositories`: acceso a persistencia
 - `dto`: contratos de request y response
 - `mapper`: mapeo entre entidades y DTOs
 - `security`: JWT, filtros y control de acceso
-- `config`: configuracion tipada de tiempo, recordatorios, email y CORS
+- `config`: configuración tipada de tiempo, recordatorios, email y CORS
 
 ### Frontend
 
-El frontend esta construido con Angular standalone y se organiza en:
+El frontend está construido con Angular y componentes standalone, y se organiza en:
 
 - `core`: modelos, guards, servicios, interceptor y timezone
-- `features`: auth, dashboard, tareas, categorias y admin
-- `layout`: shell autenticado con sidebar y topbar
+- `features`: auth, panel principal, tareas, categorías y admin
+- `layout`: contenedor autenticado con barra lateral y cabecera superior
 - `shared`: componentes reutilizables y feedback transversal
 
 ### Persistencia Y Esquema
 
 El proyecto usa Flyway para evolucionar el esquema de base de datos y `spring.jpa.hibernate.ddl-auto=validate` para asegurar que las entidades JPA y la base de datos se mantienen alineadas.
 
-Esto fuerza una disciplina mas realista:
+Esto fuerza una disciplina más realista:
 
-- no depender de cambios automaticos de Hibernate
-- versionar la evolucion del modelo
-- poder arrancar el proyecto desde una base vacia con un esquema consistente
+- no depender de cambios automáticos de Hibernate
+- versionar la evolución del modelo
+- poder arrancar el proyecto desde una base vacía con un esquema consistente
 
 ## Modelo Funcional
 
@@ -178,34 +178,34 @@ Cada usuario dispone de:
 
 - nombre
 - email
-- password cifrada
+- contraseña cifrada
 - estado activo
 - roles
-- timezone
+- zona horaria
 
 ### Tarea
 
 Cada tarea puede incluir:
 
-- titulo
-- descripcion
+- título
+- descripción
 - prioridad
 - estado
 - fecha de inicio
-- fecha limite opcional
+- fecha límite opcional
 - recordatorio activo o no
 - minutos antes del inicio para recordar
-- categoria opcional
+- categoría opcional
 
 ### Recordatorio
 
-Los recordatorios se modelan como un registro operativo asociado a la tarea, con informacion de:
+Los recordatorios se modelan como un registro operativo asociado a la tarea, con información de:
 
 - canal
-- estado de envio
+- estado de envío
 - destinatario
 - fecha programada
-- fecha real de envio
+- fecha real de envío
 - error en caso de fallo
 
 ## Estructura Del Repositorio
@@ -213,17 +213,17 @@ Los recordatorios se modelan como un registro operativo asociado a la tarea, con
 ```text
 TaskFLow/
 |-- src/                       # Backend Spring Boot activo
-|-- frontend/                  # Aplicacion Angular
+|-- frontend/                  # Aplicación Angular
 |-- compose.yaml               # Backend + MySQL para entorno local
 |-- Dockerfile                 # Imagen del backend
-|-- pom.xml                    # Build del backend
-|-- README.md                  # Documentacion raiz
+|-- pom.xml                    # Compilación del backend
+|-- README.md                  # Documentación raíz
 ```
 
 Notas relevantes:
 
 - el backend actual vive en `src/`
-- la carpeta `backend/` sigue presente solo como legado y no forma parte del build actual
+- la carpeta `backend/` sigue presente solo como legado y no forma parte de la compilación actual
 
 ## Desarrollo Local
 
@@ -261,55 +261,55 @@ http://localhost:4200
 
 ## Variables De Entorno Importantes
 
-| Variable | Descripcion |
+| Variable | Descripción |
 | --- | --- |
 | `SERVER_PORT` | Puerto del backend |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexion a MySQL |
-| `APP_TIMEZONE` | Fallback de timezone del backend |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexión a MySQL |
+| `APP_TIMEZONE` | Fallback de zona horaria del backend |
 | `APP_CORS_ALLOWED_ORIGINS` | Origen permitido para frontend |
 | `JWT_SECRET` | Secreto de firma para JWT |
 | `JWT_EXPIRATION` | Vida del token |
 | `EMAIL_PROVIDER` | Proveedor de email. En local se recomienda `log` |
 | `EMAIL_FROM` | Remitente para proveedor real |
 | `SENDGRID_API_KEY` | API key de SendGrid |
-| `TASK_REMINDERS_ENABLED` | Activa o desactiva el scheduler |
-| `TASK_REMINDERS_CRON` | Frecuencia del job de recordatorios |
-| `TASK_REMINDERS_SOON_THRESHOLD` | Ventana de busqueda futura |
+| `TASK_REMINDERS_ENABLED` | Activa o desactiva el programador |
+| `TASK_REMINDERS_CRON` | Frecuencia de la tarea programada de recordatorios |
+| `TASK_REMINDERS_SOON_THRESHOLD` | Ventana de búsqueda futura |
 | `TASK_REMINDERS_OVERDUE_WINDOW` | Tolerancia de recordatorios retrasados |
 
 ## Flujo Real De Recordatorios
 
-Para que un recordatorio se envie realmente deben cumplirse todas estas condiciones:
+Para que un recordatorio se envíe realmente deben cumplirse todas estas condiciones:
 
 1. La tarea tiene `fechaInicio`
 2. La tarea tiene recordatorio activo
-3. El usuario esta activo
-4. El backend esta corriendo
-5. El scheduler esta habilitado
-6. El proveedor de email esta correctamente configurado
+3. El usuario está activo
+4. El backend está corriendo
+5. El programador está habilitado
+6. El proveedor de email está correctamente configurado
 
-Si `EMAIL_PROVIDER=log`, el sistema no manda correo real: solo registra el envio en logs.
+Si `EMAIL_PROVIDER=log`, el sistema no manda correo real: solo registra el envío en logs.
 
 Ese modo es intencional y es el recomendado para:
 
 - desarrollo local
-- demos tecnicas
+- demos técnicas
 - pruebas de flujo sin dominio propio
 
-## Calidad Tecnica
+## Calidad Técnica
 
-El proyecto incluye una base tecnica mas seria que la de una practica simple:
+El proyecto incluye una base técnica más seria que la de una práctica simple:
 
 - migraciones Flyway
-- validacion de esquema con Hibernate
+- validación de esquema con Hibernate
 - seguridad JWT
 - control de acceso por rol
-- panel admin real
+- panel de administración real
 - tests de backend
-- build de frontend validado
-- separacion clara de responsabilidades
+- compilación del frontend validada
+- separación clara de responsabilidades
 
-## Comandos Utiles
+## Comandos Útiles
 
 Backend:
 
@@ -342,23 +342,22 @@ TaskFlow funciona bien como portfolio porque demuestra:
 - modelado de negocio razonable
 - seguridad y roles
 - tratamiento serio de fechas y zona horaria
-- evolucion de esquema con migraciones
-- administracion de usuarios
-- preparacion para integraciones externas
+- evolución de esquema con migraciones
+- administración de usuarios
+- preparación para integraciones externas
 
-No intenta resolver todo, pero si resuelve bien un alcance realista.
+No intenta resolverlo todo, pero sí resuelve bien un alcance realista.
 
 ## Estado Del Proyecto
 
-TaskFlow queda en un estado final de portfolio muy solido:
+TaskFlow queda en un estado final de portfolio muy sólido:
 
 - frontend coherente y profesional
 - backend completo y mantenible
-- administracion funcional
-- fechas, horas y recordatorios redisenados con logica clara
-- base preparada para proveedor real de email cuando exista remitente o dominio verificado
+- administración funcional
+- fechas, horas y recordatorios rediseñados con lógica clara
+- base preparada para un proveedor real de email cuando exista un remitente o dominio verificado
 
-## Documentacion Relacionada
+## Documentación Relacionada
 
 - [README del frontend](./frontend/README.md)
-

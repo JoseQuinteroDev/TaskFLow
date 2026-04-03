@@ -4,7 +4,7 @@
             <span class="page-header__eyebrow">Resumen del día</span>
             <h1 class="page-header__title">{{ greeting() }}, {{ firstName() }}</h1>
             <p class="page-header__subtitle">
-                Hoy es {{ today }}. Mantén el contexto visible y actúa sólo en lo que de verdad mueve el trabajo.
+                Hoy es {{ today }}. Mantén el contexto visible y actúa solo en lo que de verdad mueve el trabajo.
             </p>
 
             <div class="dashboard-hero__actions">
@@ -15,7 +15,7 @@
                     </svg>
                     Nueva tarea
                 </a>
-                <a routerLink="/tareas" class="btn btn-secondary">Ver backlog</a>
+                <a routerLink="/tareas" class="btn btn-secondary">Ver tareas</a>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
                 <div class="dashboard-progress__track">
                     <span class="dashboard-progress__fill" [style.--progress-width]="progressWidth()"></span>
                 </div>
-                <span class="dashboard-progress__meta">{{ completionRate() }}% completado</span>
+                <span class="dashboard-progress__meta">{{ completionRate() }} % completado</span>
             </div>
         </div>
     </section>

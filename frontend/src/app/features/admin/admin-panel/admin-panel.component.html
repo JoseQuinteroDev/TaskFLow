@@ -1,10 +1,10 @@
 <div class="page-wrapper">
     <div class="page-header admin-header">
         <div>
-            <span class="page-header__eyebrow">Administration</span>
-            <h1 class="page-header__title">Panel de administracion</h1>
+            <span class="page-header__eyebrow">Administración</span>
+            <h1 class="page-header__title">Panel de administración</h1>
             <p class="page-header__subtitle">
-                Gestiona usuarios, permisos y el estado operativo del workspace desde una vista pensada para administradores.
+                Gestiona usuarios, permisos y el estado operativo del espacio de trabajo desde una vista pensada para administradores.
             </p>
         </div>
 
@@ -29,7 +29,7 @@
             <div class="admin-create__header">
                 <div>
                     <h2>Nuevo usuario</h2>
-                    <p>Alta controlada desde administracion con permisos y estado inicial definidos desde el panel.</p>
+                    <p>Alta controlada desde administración con permisos y estado inicial definidos desde el panel.</p>
                 </div>
             </div>
 
@@ -64,13 +64,13 @@
                             placeholder="usuario@taskflow.dev"
                     />
                     @if (createForm.controls.email.invalid && createForm.controls.email.touched) {
-                        <span class="form-error">Introduce un email valido.</span>
+                                <span class="form-error">Introduce un correo electrónico válido.</span>
                     }
                 </div>
 
                 <div class="form-group admin-create__password">
                     <label class="form-label" for="admin-password">
-                        Contrasena
+                        Contraseña
                         <span class="form-required">*</span>
                     </label>
                     <input
@@ -78,10 +78,10 @@
                             type="password"
                             class="form-control"
                             formControlName="password"
-                            placeholder="Minimo 8 caracteres, una mayuscula y un numero"
+                            placeholder="Mínimo 8 caracteres, una mayúscula y un número"
                     />
                     @if (createForm.controls.password.invalid && createForm.controls.password.touched) {
-                        <span class="form-error">Debe tener al menos 8 caracteres, una mayuscula y un numero.</span>
+                        <span class="form-error">Debe tener al menos 8 caracteres, una mayúscula y un número.</span>
                     }
                 </div>
 
@@ -92,9 +92,9 @@
                             [class.choice-card--active]="createForm.controls.admin.value"
                             (click)="createForm.controls.admin.setValue(!createForm.controls.admin.value)"
                     >
-                        <span class="choice-card__label">Permisos admin</span>
+                        <span class="choice-card__label">Permisos de administrador</span>
                         <span class="choice-card__hint">
-                            {{ createForm.controls.admin.value ? 'Se crea con privilegios de administracion' : 'Se crea con acceso base de usuario' }}
+                            {{ createForm.controls.admin.value ? 'Se crea con privilegios de administración' : 'Se crea con acceso base de usuario' }}
                         </span>
                     </button>
 
@@ -106,7 +106,7 @@
                     >
                         <span class="choice-card__label">Cuenta activa</span>
                         <span class="choice-card__hint">
-                            {{ createForm.controls.activo.value ? 'El usuario puede entrar de inmediato' : 'La cuenta nace inactiva' }}
+                            {{ createForm.controls.activo.value ? 'El usuario puede entrar de inmediato' : 'La cuenta se crea inactiva' }}
                         </span>
                     </button>
                 </div>
@@ -128,7 +128,7 @@
 
     @if (loading()) {
         <div class="loading-panel">
-            <app-loading [fullPage]="false" message="Cargando panel de administracion..." />
+            <app-loading [fullPage]="false" message="Cargando panel de administración..." />
         </div>
     } @else {
         <section class="admin-summary grid-stats stagger-children">
@@ -145,7 +145,7 @@
             <div class="section-header">
                 <div>
                     <h2 class="section-title">Usuarios</h2>
-                    <p class="section-subtitle">Busca, filtra y actua sobre cuentas con una gestion clara y segura.</p>
+                    <p class="section-subtitle">Busca, filtra y actúa sobre cuentas con una gestión clara y segura.</p>
                 </div>
 
                 <div class="admin-section__meta">
@@ -197,7 +197,7 @@
             } @else if (users().length === 0) {
                 <app-empty-state
                         title="No hay usuarios para estos filtros"
-                        description="Prueba con una combinacion mas amplia o crea una nueva cuenta desde el panel."
+                        description="Prueba con una combinación más amplia o crea una nueva cuenta desde el panel."
                 />
             } @else {
                 <div class="admin-table-card card">
@@ -267,7 +267,7 @@
                                             </div>
 
                                             @if (isSelf(user)) {
-                                                <span class="row-note">Tu propia cuenta no se puede modificar desde aqui.</span>
+                                                <span class="row-note">Tu propia cuenta no se puede modificar desde aquí.</span>
                                             }
                                         </td>
                                     </tr>
@@ -278,15 +278,15 @@
 
                     <div class="admin-pagination">
                         <button class="btn btn-ghost btn-sm" type="button" [disabled]="usersPage()?.first" (click)="goToPreviousPage()">
-                            Pagina anterior
+                            Página anterior
                         </button>
 
                         <span class="admin-pagination__label mono">
-                            Pagina {{ (usersPage()?.page ?? 0) + 1 }} de {{ usersPage()?.totalPages || 1 }}
+                            Página {{ (usersPage()?.page ?? 0) + 1 }} de {{ usersPage()?.totalPages || 1 }}
                         </span>
 
                         <button class="btn btn-ghost btn-sm" type="button" [disabled]="usersPage()?.last" (click)="goToNextPage()">
-                            Pagina siguiente
+                            Página siguiente
                         </button>
                     </div>
                 </div>
@@ -297,7 +297,7 @@
             <div class="section-header">
                 <div>
                     <h2 class="section-title">Fallos recientes de recordatorios</h2>
-                    <p class="section-subtitle">Visibilidad rapida sobre notificaciones que no se han podido entregar.</p>
+                    <p class="section-subtitle">Visibilidad rápida sobre notificaciones que no se han podido entregar.</p>
                 </div>
             </div>
 
@@ -308,7 +308,7 @@
             } @else if (reminderFailures().length === 0) {
                 <app-empty-state
                         title="No hay fallos recientes"
-                        description="Los recordatorios fallidos apareceran aqui para poder revisar su causa."
+                        description="Los recordatorios fallidos aparecerán aquí para poder revisar su causa."
                 />
             } @else {
                 <div class="failure-grid stagger-children">
@@ -316,7 +316,7 @@
                         <article class="failure-card card">
                             <div class="failure-card__header">
                                 <div>
-                                    <span class="failure-card__eyebrow">Reminder failure</span>
+                                    <span class="failure-card__eyebrow">Error de recordatorio</span>
                                     <h3>{{ failure.tareaTitulo }}</h3>
                                 </div>
 
@@ -354,8 +354,8 @@
 @if (deleteTarget()) {
     <app-confirm-dialog
             title="Eliminar usuario"
-            [message]="'Se eliminaran tambien sus tareas, categorias y recordatorios asociados. Esta accion no se puede deshacer.'"
-            confirmLabel="Si, eliminar"
+            [message]="'Se eliminarán también sus tareas, categorías y recordatorios asociados. Esta acción no se puede deshacer.'"
+            confirmLabel="Sí, eliminar"
             (confirmed)="confirmDelete()"
             (cancelled)="deleteTarget.set(null)"
     />

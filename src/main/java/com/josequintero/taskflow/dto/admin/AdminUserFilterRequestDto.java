@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 public class AdminUserFilterRequestDto {
 
-    @Size(max = 120, message = "El filtro de email no puede superar los 120 caracteres")
+    @Size(max = 120, message = "El filtro de correo electrónico no puede superar los 120 caracteres")
     private String email;
 
     @Size(max = 100, message = "El filtro de nombre no puede superar los 100 caracteres")
@@ -28,11 +28,11 @@ public class AdminUserFilterRequestDto {
     private Boolean activo;
 
     @Builder.Default
-    @Min(value = 0, message = "La pagina no puede ser negativa")
+    @Min(value = 0, message = "La página no puede ser negativa")
     private Integer page = 0;
 
     @Builder.Default
-    @Min(value = 1, message = "El tamano minimo de pagina es 1")
-    @Max(value = 50, message = "El tamano maximo de pagina es 50")
+    @Min(value = 1, message = "El tamaño mínimo de página es 1")
+    @Max(value = 50, message = "El tamaño máximo de página es 50")
     private Integer size = 10;
 }

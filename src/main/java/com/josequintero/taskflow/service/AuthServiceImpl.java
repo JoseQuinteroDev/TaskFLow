@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         String normalizedTimezone = tareaTemporalService.normalizeTimezone(request.getTimezone(), "Europe/Madrid");
 
         if (usuarioRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new BusinessException("El email ya esta registrado");
+            throw new BusinessException("El correo electrónico ya está registrado");
         }
 
         Rol rolUser = rolRepository.findByNombre(NombreRol.ROLE_USER)

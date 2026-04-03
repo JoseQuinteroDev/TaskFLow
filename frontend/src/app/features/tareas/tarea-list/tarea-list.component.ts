@@ -165,12 +165,12 @@ export class TareaListComponent implements OnInit {
   }
 
   emptyTitle(): string {
-    return Object.keys(this.filtros).length ? 'No hay resultados para estos filtros' : 'Aun no has creado tareas';
+    return Object.keys(this.filtros).length ? 'No hay resultados para estos filtros' : 'Aún no has creado tareas';
   }
 
   emptyDesc(): string {
     return Object.keys(this.filtros).length
-      ? 'Prueba a ampliar la busqueda o ajustar los filtros activos.'
+      ? 'Prueba a ampliar la búsqueda o ajustar los filtros activos.'
       : 'Crea la primera tarea para empezar a organizar el trabajo.';
   }
 

@@ -110,7 +110,7 @@ export class AdminPanelComponent implements OnInit {
       {
         label: 'Fallos de aviso',
         value: summary.recordatoriosFallidos,
-        hint: 'Notificaciones que requieren atencion',
+        hint: 'Notificaciones que requieren atención',
         tone: 'amber'
       }
     ];
@@ -209,7 +209,7 @@ export class AdminPanelComponent implements OnInit {
     this.adminService.createUser(payload).subscribe({
       next: createdUser => {
         this.creating.set(false);
-        this.toast.success('Usuario creado', `${createdUser.nombre} ya esta disponible en el workspace.`);
+        this.toast.success('Usuario creado', `${createdUser.nombre} ya está disponible en el espacio de trabajo.`);
         this.toggleCreateForm();
         this.refreshUsersAfterMutation();
         this.loadSummary();
@@ -341,7 +341,7 @@ export class AdminPanelComponent implements OnInit {
       },
       error: err => {
         this.loading.set(false);
-        this.toast.error('Error', this.resolveError(err, 'No hemos podido cargar el panel de administracion.'));
+        this.toast.error('Error', this.resolveError(err, 'No hemos podido cargar el panel de administración.'));
       }
     });
   }

@@ -14,6 +14,6 @@ import lombok.Setter;
 @Builder
 public class AdminUserRoleUpdateRequestDto {
 
-    @NotNull(message = "Debes indicar si el usuario tendra privilegios de administrador")
+    @NotNull(message = "Debes indicar si el usuario tendrá privilegios de administrador")
     private Boolean admin;
 }

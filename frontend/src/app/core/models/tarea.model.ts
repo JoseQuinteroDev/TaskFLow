@@ -79,7 +79,7 @@ export const RECORDATORIO_OPTIONS = [
     { value: 180, label: '3 horas antes' },
     { value: 720, label: '12 horas antes' },
     { value: 1440, label: '24 horas antes' },
-    { value: 2880, label: '2 dias antes' },
-    { value: 4320, label: '3 dias antes' },
-    { value: 10080, label: '7 dias antes' }
+    { value: 2880, label: '2 días antes' },
+    { value: 4320, label: '3 días antes' },
+    { value: 10080, label: '7 días antes' }
 ] as const;
